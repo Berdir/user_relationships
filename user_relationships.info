@@ -1,0 +1,4 @@
+; $Id$
+name = User Relationships
+description = "Lets users create named relationships between each other."
+package = "User Relationships"
