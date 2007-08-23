@@ -133,7 +133,7 @@ function user_relationship_mailer_form_alter($form_id, &$form) {
           $form['mail'][$op]["user_relationship_mailer_send_{$op}"] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Send @op messages', array('@op' => $op)),
-            '#default_value'  => variable_get('user_relationship_mailer_send_request', TRUE),
+            '#default_value'  => variable_get("user_relationship_mailer_send_{$op}", TRUE),
           );
           $form['mail'][$op]["user_relationship_mailer_{$op}_subject"] = array(
             '#type'           => 'textfield',
