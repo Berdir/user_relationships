@@ -19,9 +19,11 @@
  *    object with the invite data including the inviter user object and relationship_type object
 */
 function user_relationship_invites_get_invite($code) {
-  $invite = db_fetch_object(db_query("SELECT * FROM {user_relationship_invites} WHERE invite_code = '%s'", $code));
-  $invite->inviter = user_load(array('uid' => $invite->inviter_uid));
-  $invite->relationship_type = user_relationships_relationship_type_load(array('rtid' => $invite->rtid));
+  if (is_numeric($code)) {
+    $invite = db_fetch_object(db_query("SELECT * FROM {user_relationship_invites} WHERE invite_code = '%s'", $code));
+    $invite->inviter = user_load(array('uid' => $invite->inviter_uid));
+    $invite->relationship_type = user_relationships_relationship_type_load(array('rtid' => $invite->rtid));
+  }
 
   return $invite;
 }
