@@ -248,3 +248,14 @@ function user_relationship_defaults_user_relationships_page_alter($page_id, &$pa
     break;
   }
 }
+
+/**
+ * hook_user_relationships()
+ */
+function user_relationship_defaults_user_relationships($op, &$relationship_type) {
+  switch ($op) {
+  case 'delete type':
+    db_query("DELETE FROM {user_relationship_defaults} WHERE rtid = %d", $relationship_type->rtid);
+    break;
+  }
+}
