@@ -48,11 +48,11 @@ function user_relationship_mailer_send_email($op, &$relationship) {
     return;
   }
 
-  $send_email = variable_get('user_relationship_mailer_send_mail', FALSE) 
-    && variable_get("user_relationship_mailer_send_{$op}", TRUE)
-    && $send_email;
+  $send_email = $send_email 
+    && variable_get('user_relationship_mailer_send_mail', FALSE) 
+    && variable_get("user_relationship_mailer_send_{$op}", TRUE);
   
-  if (!send_email) {
+  if (!$send_email) {
     return; //sending email has been turned off
   }
 
