@@ -85,7 +85,7 @@ function user_relationship_mailer_approve_default() {
   return <<<MESSAGE
 Hi @requester_name,
 
-@requestee_name has approve your request to create a @relationship_name relationship to them.
+@requestee_name has approved your request to create a @relationship_name relationship to them.
 
 Here's a link to your relationships:
   @requester_list_link
