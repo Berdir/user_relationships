@@ -114,9 +114,22 @@ function user_relationships_request_relationship(&$requester, &$requestee, &$rel
   if (!variable_get('user_relationships_allow_multiple', TRUE)) {
     foreach ($requester->relationships as $relationship) {
       if ($relationship->requestee_id == $requestee->uid) {
-        return FALSE;
+        return t('Users are not allowed to have multiple relationships');
       }
     }
+  }
+
+  $existing = db_result(db_query(
+    " SELECT 1 
+      FROM {user_relationships} 
+      WHERE rtid = %d
+        AND ((requester_id = %d AND requestee_id = %d)
+          OR (requestee_id = %d AND requester_id = %d)
+        )
+    ", $relationship_type->rtid, $requester->uid, $requestee->uid, $requester->uid, $requestee->uid
+  ));
+  if ($existing) {
+    return t('This relationship already exists');
   }
 
   $user_auto_approve = is_array($requestee->user_relationships_auto_approve) && $requestee->user_relationships_auto_approve[$relationship->rid];
