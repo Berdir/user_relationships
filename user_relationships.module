@@ -101,7 +101,7 @@ function _user_relationships_actions_between(&$viewer, &$viewed) {
       // Viewer is the requestee
       else {
         $list[] = t('This user believes that they are a %relationship_name of yours. (!pending_requests)', array(
-          '%relationship_name'  => $requestee->name,
+          '%relationship_name'  => $relationship->name,
           '!pending_requests'   => l(t('pending requests'), "relationships/$viewer->uid/requests"),
         ));
       }
