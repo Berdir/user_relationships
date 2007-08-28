@@ -181,7 +181,7 @@ function user_relationships_remove_submit($form_id, &$form_values) {
   drupal_set_message(t("!Person is no longer a %relationship_name of !requestee.", array(
     '!Person'             => $relationship->requester->name,
     '%relationship_name'  => $relationship->name,
-    '!requestee'          => ($relationship->requestee->uid == $user->uid ? t("your's") : $relationship->requestee->name)
+    '!requestee'          => ($relationship->requestee->uid == $user->uid ? t("yours") : $relationship->requestee->name)
   )));
 
   return 'relationships/'. $form_values['viewed_id'];
