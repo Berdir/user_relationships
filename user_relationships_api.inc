@@ -137,7 +137,7 @@ function user_relationships_request_relationship(&$requester, &$requestee, &$rel
     $approved = TRUE;
   }
 
-  $rid = db_next_id('{user_relationships}_rid');
+  $rid = db_next_id('{user_relationships}_id');
 
   db_query(
     "INSERT INTO {user_relationships} (rid, requester_id, requestee_id, rtid, approved) VALUES (%d, %d, %d, %d, %d)",
