@@ -142,3 +142,18 @@ function theme_user_relationships_pending_request_disapprove_link($uid, $relatio
 function theme_user_relationships_pending_request_cancel_link($uid, $relationship) {
   return l(t('Cancel'), "relationships/$uid/requested/cancel/$relationship", array('title' => t('Cancel')), drupal_get_destination(), NULL, FALSE, TRUE);
 }
+
+/**
+ * Link to user page (use usernode if it's available)
+ */
+function theme_user_relationship_user_link($uid) {
+  if (module_exists('usernode')) {
+    $nid  = usernode_get_node_id($uid);
+    $url  = "node/$nid";
+  }
+  else {
+    $url = "user/$uid";
+  }
+
+  return url($url, NULL, NULL, TRUE); 
+}
