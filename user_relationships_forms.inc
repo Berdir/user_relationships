@@ -30,9 +30,12 @@ function user_relationships_settings() {
     $form['general']['user_relationships_relationships_per_page'] = array(
       '#type'           => 'textfield',
       '#title'          => t("Relationships per page"),
-      '#size'          => 4,
+      '#size'           => 4,
       '#description'    => t('Number of relationships to show per page. If set to 0 all will be shown.'),
       '#default_value'  => variable_get('user_relationships_relationships_per_page', 16),
+      '#validate'       => array('user_relationships_setting_validation' => array(array(
+        'is_numeric' => array('msg' => t('The relationships per page setting is not an integer'))
+      )))
     );
 
   return system_settings_form($form);
