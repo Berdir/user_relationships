@@ -21,15 +21,14 @@ function theme_user_relationships_page($uid = NULL, $relationship = NULL) {
   }
 
   $query = 
-    " SELECT r.*, rt.name, rt.is_oneway 
+     "SELECT r.*, rt.name, rt.is_oneway 
       FROM {user_relationships} r, {user_relationship_types} rt 
       WHERE (requester_id = %d OR requestee_id = %d) 
         AND r.rtid = rt.rtid 
-        AND r.approved = 1
-    ";
+        AND r.approved = 1";
   $args = array($uid, $uid);
 
-  if (isset($relationship)) {
+  if (isset($relationship->rtid)) {
     $query .= " AND r.rtid = %d";
     $args[] = $relationship->rtid;
   }
