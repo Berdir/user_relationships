@@ -205,9 +205,6 @@ function user_relationships_update_relationship(&$relationship, &$updated_relati
 function user_relationships_delete_relationship(&$relationship, &$deleted_by, $op = 'remove') {
   $relationship->deleted_by = $deleted_by;
   db_query("DELETE FROM {user_relationships} WHERE rid = %d", $relationship->rid);
-  if (!is_array($relationship->type->implied_by)) {
-    die("<pre>".print_r($relationship, true)."</pre>");
-  }
 
   _user_relationships_invoke('delete', $relationship, $op);
 }
