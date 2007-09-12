@@ -275,3 +275,35 @@ function user_relationships_user($type, &$edit, &$account, $category = NULL) {
     return $form;
   }
 }
+
+
+/**
+ * Cron
+ */
+function user_relationships_cron() {
+  $now = time();
+
+  // only expire relationships once a day
+  $last_cron = variable_get('user_relationships_last_expire', 0);
+  if ($now >  $last_cron + (24 * 60 * 60)) {
+    return FALSE;
+  }
+
+  switch ($GLOBALS['db_type']) {
+  case 'mysql':
+  case 'mysqli':
+    db_query(
+      " DELETE ur
+        FROM user_relationships ur, user_relationship_types urt 
+        WHERE ur.approved = 0 
+          AND ur.rtid = urt.rtid 
+          AND urt.expires_val > 0 
+          AND NOW() > DATE_ADD(ur.updated_at, INTERVAL urt.expires_val DAY)"
+    );
+    break;
+  }
+
+  // remember when we last expired relationships
+  variable_set('user_relationships_last_expire', $now);
+  return TRUE;
+}

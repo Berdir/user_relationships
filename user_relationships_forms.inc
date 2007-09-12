@@ -72,6 +72,15 @@ function user_relationships_type_edit($rtid = NULL) {
     '#description'    => t('Check this if the requestee must approve the relationship'),
     '#weight'         => -9
   );
+  $form['expires_val'] = array(
+    '#title'          => t('Request expires in'),
+    '#field_suffix'   => t('days'),
+    '#type'           => 'textfield',
+    '#size'           => 4,
+    '#default_value'  => isset($relationship_type->expires_val) ? $relationship_type->expires_val : 0,
+    '#description'    => t('After how many days should a request of this type be removed? (0 for never)'),
+    '#weight'         => -9,
+  );
   $form['relationship_type'] = array(
     '#type'   => 'value',
     '#value'  => $relationship_type,
