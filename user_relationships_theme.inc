@@ -15,11 +15,11 @@ function theme_user_relationships_page($uid = NULL, $relationship = NULL) {
     $viewed_user =& $user;
   }
   else {
-    $viewd_user = user_load(array('uid' => $uid));
+    $viewed_user = user_load(array('uid' => $uid));
   }
 
   // Check that the uid is valid, not the anonymous user, and the user exists
-  if ($viewed_user->uid > 0) {
+  if ($viewed_user->uid == 0) {
     drupal_not_found();
     exit();
   }
@@ -45,7 +45,7 @@ function theme_user_relationships_page($uid = NULL, $relationship = NULL) {
     $online_interval = time() - variable_get('user_block_seconds_online', 180);
 
     while ($relation = db_fetch_object($result)) {
-      $this_user = $user->uid == $relation->requestee_id ? 'requester_id' : 'requestee_id';
+      $this_user = $viewed_user->uid == $relation->requestee_id ? 'requester_id' : 'requestee_id';
       $this_user = user_load(array('uid' => $relation->$this_user));
 
       $rows[] = array(
