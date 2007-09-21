@@ -223,7 +223,7 @@ function user_relationships_pending_requested($action, $viewed_id, $relationship
     t("Are you sure you want to @action the request to create a %relationship_name relationship to !name?", array(
       '@action'             => $action,
       '%relationship_name'  => $relationship->name,
-      '!name'               => theme('username', $relationship->requester)
+      '!name'               => theme('username', $viewed_id == $relationship->requester_id ? $relationship->requestee, $relationship->requester)
     )),
     t('Yes'), t('No'),
     'user_relationships_approve_confirm'
