@@ -28,6 +28,9 @@ function user_relationship_mailer_send_email($op, &$relationship) {
 
   switch ($op) {
   case 'request':
+    if ($relationship->approved) {
+      return;
+    }
   case 'cancel':
     $send_email = $send_to_requestee;
     $send_to[] = $requestee->mail;
