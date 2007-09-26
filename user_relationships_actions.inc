@@ -50,7 +50,6 @@ function user_relationships_type_edit_submit($form_id, &$form_values) {
       $form_values['rtid'],
       $form_values['name'],
       $form_values['plural_name'],
-      $form_values['plural_name'],
       $form_values['is_oneway'],
       $form_values['requires_approval'],
       $form_values['expires_val']
