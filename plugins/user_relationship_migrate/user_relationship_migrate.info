@@ -1,0 +1,5 @@
+; $Id$
+name = User Relationship Migrate
+description = "Allows admins to migrate buddylist relationships to user relationships"
+dependencies = user_relationships buddylist
+package = "User Relationships"
