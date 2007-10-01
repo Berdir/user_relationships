@@ -263,7 +263,7 @@ function user_relationships_user($type, &$edit, &$account, $category = NULL) {
           '#title'          => t('Automatically approve to relationship requests'),
           '#options'        => $options,
           '#default_value'  => $edit['user_relationships_auto_approve'],
-          '#description'    => t("Check off the types of relationships you'd like to automatically approve to.")
+          '#description'    => t("Check off the types of relationships you'd like to automatically approve.")
         );
       }
     }
