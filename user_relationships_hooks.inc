@@ -260,7 +260,7 @@ function user_relationships_user($type, &$edit, &$account, $category = NULL) {
         }
         $form['user_relationships_settings']['user_relationships_auto_approve'] = array(
           '#type'           => 'checkboxes',
-          '#title'          => t('Automatically approve to relationship requests'),
+          '#title'          => t('Automatically approve the following relationship requests'),
           '#options'        => $options,
           '#default_value'  => $edit['user_relationships_auto_approve'],
           '#description'    => t("Check off the types of relationships you'd like to automatically approve.")
