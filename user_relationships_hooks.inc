@@ -186,20 +186,6 @@ function user_relationships_menu($may_cache) {
  */
 function user_relationships_user($type, &$edit, &$account, $category = NULL) {
   switch($type) {
-  case 'load':
-    $account->relationships = array();
-
-    $results = db_query(
-      " SELECT r.*, rt.name, rt.plural_name, rt.is_oneway FROM {user_relationships} r, {user_relationship_types} rt
-        WHERE (requester_id = %d OR requestee_id = %d)
-          AND r.rtid = rt.rtid",
-      $account->uid, $account->uid
-    );
-    while ($relationship = db_fetch_object($results)) {
-      $account->relationships[] = $relationship;
-    }
-    break;
-
   case 'login':
     if (user_access('maintain relationships')) {
       _user_relationships_set_notifications($account);
