@@ -238,7 +238,7 @@ function user_relationships_block_num_rels_validate($form) {
  * @return array of relationship objects
  */
 function user_relationships_block_select_relationships($user, $rtid, $how_many, $options, $options_index) {
-  $relationships = user_relationships_load_all_for_user($viewer->uid);
+  $relationships = user_relationships_load_all_for_user($user->uid);
 
   if (is_null($relationships)) return NULL;
 
