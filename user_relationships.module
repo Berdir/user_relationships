@@ -9,7 +9,7 @@
  */
 
 $ur_include_files = array(
-  'api', 'theme', 'hooks', 'pages', 'forms', 'actions', 'views'
+  'api', 'theme', 'hooks', 'pages', 'forms', 'actions'//, 'views'
 );
 foreach ($ur_include_files as $file_to_include) {
   include_once("user_relationships_{$file_to_include}.inc");
