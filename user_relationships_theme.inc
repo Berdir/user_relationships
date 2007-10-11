@@ -11,7 +11,7 @@
 function theme_user_relationships_page($uid = NULL, $relationship = NULL) {
   global $user;
 
-  if (empty($uid)) {
+  if (empty($uid) || $uid == $user->uid) {
     $viewed_user =& $user;
   }
   else {

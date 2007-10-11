@@ -88,6 +88,7 @@ function user_relationships_type_edit_submit($form_id, &$form_values) {
 function user_relationships_type_delete_submit($form_id, &$form_values) {
   $rtid = arg(4);
 
+  cache_clear_all("user_relationships", 'cache_user_relationships', TRUE);
   db_query("DELETE FROM {user_relationship_types} WHERE rtid = %d", $rtid);
   db_query("DELETE FROM {user_relationships} WHERE rtid = %d", $rtid);
 

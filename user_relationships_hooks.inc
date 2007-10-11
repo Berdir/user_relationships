@@ -224,6 +224,7 @@ function user_relationships_user($type, &$edit, &$account, $category = NULL) {
 
   case 'delete':
     db_query("DELETE FROM {user_relationships} WHERE requester_id = %d OR requestee_id = %d", $account->uid, $account->uid);
+    cache_clear_all("user_relationships", 'cache_user_relationships', TRUE);
     break;
 
   case 'form':
