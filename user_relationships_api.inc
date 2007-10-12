@@ -111,7 +111,7 @@ function user_relationships_relationship_load($rid) {
   static $user_relationships = array(); 
 
   if (!$user_relationships[$rid]) {
-    if (($cache = cache_get("user_relationships_relationship_{$rid}", 'cache_user_relationships')) && !empty($cache->date)) {
+    if (($cache = cache_get("user_relationships_relationship_{$rid}", 'cache_user_relationships')) && !empty($cache->data)) {
       $user_relationships[$rid] = unserialize($cache->data);
     }
     elseif ($relationship = db_fetch_object(db_query("SELECT * FROM {user_relationships} WHERE rid = %d", $rid))) {
