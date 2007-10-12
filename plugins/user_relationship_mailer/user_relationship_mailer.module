@@ -63,13 +63,12 @@ function user_relationship_mailer_send_email($op, &$relationship) {
   }
   foreach ($send_to as $target) {
     $replacements = user_relationship_mailer_replacements($relationship);
-    $message_function = "user_relationship_mailer_{$op}_default";
-    $subject = variable_get("user_relationship_mailer_{$op}_subject", $message_function());
     if ($op == 'remove') {
       $replacements['@profile_uid'] = $target['uid'];
     }
 
     $message_function = "user_relationship_mailer_{$op}_default";
+    $subject = t(variable_get("user_relationship_mailer_{$op}_subject", $message_function()), $replacements);
     $message = t(variable_get("user_relationship_mailer_{$op}_message", $message_function()), $replacements);
 
     $site_mail = variable_get('site_mail', '');
