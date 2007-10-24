@@ -6,6 +6,7 @@
  */
 function user_relationship_migrate_uninstall() {
   variable_del('user_relationship_migrate_checkpoint');
+  variable_del('user_relationship_migrate_email');
   variable_del('user_relationship_migrate_pending');
   variable_del('user_relationship_migrate_rtype');
   variable_del('user_relationship_migrate_status');
