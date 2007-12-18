@@ -81,7 +81,7 @@ function user_relationships_settings() {
  * Relationship type edit page.
  */
 function user_relationships_type_edit($rtid = NULL) {
-  if (arg(3) == "edit" && $rid >= 0) {
+  if (arg(3) == "edit" && $rtid >= 0) {
     $relationship_type = user_relationships_relationship_type_load(array('rtid' => $rtid));
   }
 

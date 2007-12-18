@@ -7,12 +7,12 @@
  * Please consult either the other files for public functions
  *
  */
-
-$ur_include_files = array(
+foreach (array(
   'api', 'theme', 'hooks', 'pages', 'forms', 'actions'//, 'views'
-);
-foreach ($ur_include_files as $file_to_include) {
-  include_once("user_relationships_{$file_to_include}.inc");
+  ) as $file_to_include
+) { 
+  $modulepath = drupal_get_path('module', 'user_relationships');
+  include_once("{$modulepath}/user_relationships_{$file_to_include}.inc");
 }
 
 /**
