@@ -197,7 +197,7 @@ function user_relationships_menu($may_cache) {
         'title'               => t('Remove relationship'),
         'access'              => $edit_access,
         'callback'            => 'drupal_get_form',
-        'callback arguments'  => array('user_relationships_remove', $id, arg(3)),
+        'callback arguments'  => array('user_relationships_remove', $id, arg(4)),
         'type'                => MENU_CALLBACK,
       );
 
