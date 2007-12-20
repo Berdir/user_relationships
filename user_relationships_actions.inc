@@ -163,11 +163,12 @@ function user_relationships_request_submit($form_id, &$form_values) {
   $requestee          = $form_values['requestee'];
   $relationship_type  = user_relationships_type_load(array('rtid' => $form_values['rtid']));
   
-  user_relationships_request_relationship($requester, $requestee, $relationship_type);
+  $relationship = user_relationships_request_relationship($requester, $requestee, $relationship_type);
 
   $relationship->requester = $requester;
   $relationship->requestee = $requestee;
   $relationship->type = $relationship_type;
+
   drupal_set_message(user_relationships_get_message(($relationship->approved ? 'pre_approved' : 'submitted'), $relationship));
 
   return 'user';
