@@ -9,7 +9,7 @@ function user_relationship_privatemsg_form_alter($form_id, &$form) {
     $relationships = user_relationships_load(array('requester_id' => $user->uid));
     $contacts = array();
     foreach ($relationships as $relationship) {
-      $contacts[$relationship->name][$relationship->requestee_name] = $relationship->requestee_name;
+      $contacts[$relationship->plural_name][$relationship->requestee_name] = $relationship->requestee_name;
     }
 
     $form['quick']['#options'] = array_merge($form['quick']['#options'], $contacts);
