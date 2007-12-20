@@ -6,7 +6,8 @@ This is a plugin module for the User Relationships and Invite modules.
 
 It allows users to invite friends and specify a relationship at invite time.
 
-Send comments to Jeff Smick: http://drupal.org/user/107579/contact
+Send comments to Jeff Smick: http://drupal.org/user/107579/contact, or post an issue at
+http://drupal.org/project/user_relationships.
 
 
 Requirements

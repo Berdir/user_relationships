@@ -6,7 +6,8 @@ This is a plugin module for the User Relationships module.
 
 It provides the facility to email users notifications about relationship changes
 
-Send comments to Jeff Smick: http://drupal.org/user/107579/contact
+Send comments to Jeff Smick: http://drupal.org/user/107579/contact, or post an issue at
+http://drupal.org/project/user_relationships.
 
 
 Requirements

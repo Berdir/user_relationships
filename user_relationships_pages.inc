@@ -10,7 +10,7 @@
  * Relationship Types List
  */
 function user_relationships_types_list_page() {
-  $relationship_types = user_relationships_relationship_types_load();
+  $relationship_types = user_relationships_types_load();
 
   $table['headers'] = array(t('Name'), t('Plural'), t('Type'), t('Requires Approval'), t('Expiration'), t('Operations'));
   $table['data'] = array();

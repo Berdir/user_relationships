@@ -1,0 +1,5 @@
+; $Id$
+name = User Relationship Views
+description = "Integrates User Relationships with views"
+dependencies = user_relationships views
+package = "User Relationships"

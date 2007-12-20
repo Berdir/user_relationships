@@ -10,7 +10,8 @@ implied by another is deleted the implied by relationship is also deleted.
 
 Implied relationships can be chained (ex: Manager implies Coworker implies Officemate)
 
-Send comments to Jeff Smick: http://drupal.org/user/107579/contact
+Send comments to Jeff Smick: http://drupal.org/user/107579/contact, or post an issue at
+http://drupal.org/project/user_relationships.
 
 
 Scenarios
