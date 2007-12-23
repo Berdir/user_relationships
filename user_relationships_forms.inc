@@ -259,7 +259,7 @@ function user_relationships_pending_requested($action, $viewed_id, $relationship
   $output = confirm_form(
     $form,
     t('@action relationship', array('@action' => ucfirst($action))),
-    "relationships/{$viewed_id}/requests",
+    "user/{$viewed_id}/relationships/requests",
     t("Are you sure you want to @action the request to create a %relationship_name relationship to !name?", array(
       '@action'             => $action,
       '%relationship_name'  => $relationship->name,
@@ -290,7 +290,7 @@ function user_relationships_remove($viewed_id, $relationship) {
   $output = confirm_form(
     $form,
     t('Remove relationship'),
-    'relationships/' . $viewed_id,
+    "user/{$viewed_id}/relationships/",
     t("Are you sure you no longer wish to be a %relationship_name of !name?", array(
       '%relationship_name'  => $relationship->name,
       '!name'               => theme('username', user_load(array('uid' => ($viewed_id == $relationship->requester_id ? $relationship->requestee_id : $relationship->requester_id))))
