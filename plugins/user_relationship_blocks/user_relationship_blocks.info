@@ -1,5 +1,0 @@
-; $Id$
-name = User Relationship Blocks
-description = "Blocks that can be used with User Relationships"
-dependencies = user_relationships
-package = "User Relationships"

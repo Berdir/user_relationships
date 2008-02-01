@@ -1,5 +1,0 @@
-; $Id$
-name = User Relationship Privatemsg
-description = "Integrates User Relationships with Privatemsg"
-dependencies = user_relationships privatemsg
-package = "User Relationships"

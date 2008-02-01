@@ -1,5 +1,0 @@
-; $Id$
-name = User Relationships Implications
-description = "Lets admins create implied relationships. For example 'Manager implies Coworker'"
-dependencies = user_relationships
-package = "User Relationships"
