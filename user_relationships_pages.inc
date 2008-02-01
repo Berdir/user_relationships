@@ -24,8 +24,8 @@ function user_relationships_types_list_page() {
       ($relationship->is_oneway ? t('one way') : t('mutual')),
       ($relationship->requires_approval ? t('yes') : t('no')),
       ($relationship->expires_val ? t(format_plural($relationship->expires_val, '1 day', '@count days')) : t('Never')),
-      l(t('edit'),    'admin/user/relationships/edit/'. $relationship->rtid) . ' | ' .
-      l(t('delete'),  'admin/user/relationships/delete/'. $relationship->rtid)
+      l(t('edit'),    "admin/user/relationships/{$relationship->rtid}/edit") . ' | ' .
+      l(t('delete'),  "admin/user/relationships/{$relationship->rtid}/delete")
     );
   }
 
