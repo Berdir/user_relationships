@@ -1,108 +1,64 @@
-/* $Id$
+$Id$
 
-User Relationships Module
--------------------------
-This module allows users to create named relationships between each other.
+User Relationships
+------------------
+User Relationships is a pretty self-descriptive module. It allows users the
+opportunity to create relationships between each other.
 
-Relationship types are defined by the admins.
-
-Multiple relationships are supported and can be enabled or disabled
+The module has been broken up into component pieces in an effort to keep the size
+down and the speed up. The list of modules and a quick intro about each is below
 
 Send comments to Jeff Smick: http://drupal.org/user/107579/contact, or post an issue at
 http://drupal.org/project/user_relationships.
 
-
 Requirements
 ------------
-Drupal 5
+Drupal 7
 
 
 Installation
 ------------
-1. Copy the user_relationships folder to the appropriate Drupal directory.
+1.  Copy the user_relationships folder to the appropriate Drupal (sites/all/modules or sites/default/modules) directory.
 
-2. Enable User Relationships in the "Site building -> modules" administration screen.
+2.  Enable User Relationships in the "Modules" administration screen.
 
-   Enabling the User Relationships module will trigger the creation of the database schema. 
-   If you are shown error messages you may have to create the schema by hand. Please 
-   see the database definition at the end of this file.
+    If this is only a requirement of another module and the UI is not needed you'll
+    only need to enable the API module.
 
-3. Create relationship types in "User Management -> User Relationships -> Add relationship"
-
-
-
-Developers
-------------
-I tried to make this module as modular as possible (is that a horrible sentence? I don't care).
-This is the core to a more robust set of features that are built as plugins. I tried to make it as
-extensible as possible. If you need something more out of the core (and I hope that you don't), please
-feel free to get in contact with me (http://drupal.org/user/107579/contact) and we can talk about it.
-
-Take a look at the following files for more information about the API and theme-able functions provided
-  user_relationships_api.inc
-  user_relationships_theme.inc
-
-The module also invokes a "user_relationships" hook passing in the following argumens:
-  $type will be a string of the following
-    $type     | $category   | Description
-    ----------------------------------------------------------------------
-    insert    | type        | before a new relationship type is created
-    update    | type        | before a relationship type is updated
-    delete    | type        | after a relationship type is deleted
-    load      | type        | after a relationship type is loaded (so you can add data to it if you'd like)
-
-    load      | NULL        | after a relationship is loaded
-    insert    | NULL        | after a new relationship is created
-    update    | NULL        | before a relationship is updated
-    delete    | remove      | when a relationship is removed
-    delete    | cancel      | when a relationship request is cancelled
-    delete    | disapprove  | when a relationship request is disapprove
-    
-
-  $relationship either the relationship_type or relationship object
+3.  If you've enabled the UI module you can create relationship types and modify settings under
+    Configuration -> People -> Relationships
 
 
-Database Schema
----------------
-MySQL
-=====
+Included Modules
+----------------
+NOTE: Please read the individual README.txt files in each module's directory for a more in-depth
+      explanation of the module and its functionality.
 
---
--- Table structure for table `user_relationships`
---
+User Relationships API:
+  This is the purely functional portion. It will only provide an API that other modules can
+  use to control relationships
 
-CREATE TABLE IF NOT EXISTS `user_relationships` (
-  `rid` int(10) unsigned NOT NULL default '0',
-  `requester_id` int(11) NOT NULL default '0',
-  `requestee_id` int(11) NOT NULL default '0',
-  `rtid` int(11) NOT NULL default '0',
-  `approved` tinyint(1) NOT NULL default '0',
-  `created_at` int(11) NOT NULL,
-  `updated_at` int(11) NOT NULL,
-  UNIQUE KEY `requester_id_2` (`requester_id`,`requestee_id`,`rtid`),
-  KEY `rid` (`rid`),
-  KEY `requester_id` (`requester_id`),
-  KEY `requestee_id` (`requestee_id`),
-  KEY `rtid` (`rtid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+User Relationships UI:
+  A basic user interface. UR-UI provides admins the ability to create realtionship types and
+  users to request/cancel/approve/disapprove/remove relationships with each other.
 
---
--- Table structure for table `user_relationship_types`
---
-CREATE TABLE IF NOT EXISTS `user_relationship_types` (
-`rtid` int(10) unsigned NOT NULL default '0',
-`name` varchar(255) NOT NULL default '',
-`plural_name` varchar(255) NOT NULL default '',
-`is_oneway` tinyint(1) NOT NULL default '0',
-`requires_approval` tinyint(1) NOT NULL default '0',
-`expires_val` int(10) unsigned NOT NULL default 0,
-PRIMARY KEY (`rtid`),
-UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+User Relationship Blocks:
+  Provides some basic blocks to show relationships and perform actions.
+
+User Relationship Defaults:
+  Gives admins the ability to create default relationships that are added to a user when they sign up
+
+User Relationship Implications:
+  Enables the creation of implied relationships, relationships that are created automatically when
+  a specified relationship is created.
+
+User Relationships Mailer:
+  A helper module that will send email notifications about relationship actions
+
 
 
 Credits
 -------
-Written by Jeff Smick.
-Written originally for and financially supported by OurChart Inc. (http://www.ourchart.com)
+Written by Jeff Smick (sprsquish).
+Originally written for and financially supported by OurChart Inc. (http://www.ourchart.com)
 Thanks to the BuddyList module team for their inspiration

@@ -1,0 +1,8 @@
+; $Id$
+name = UR-Defaults
+description = "Allows admins to specify relationships that are automatically created when a new user joins"
+dependencies[] = user_relationships_api
+dependencies[] = user_relationships_ui
+package = "User Relationships"
+core = 7.x
+files[]=user_relationship_defaults.module

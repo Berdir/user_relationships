@@ -1,0 +1,7 @@
+; $Id$
+name = UR-Elaborations
+description = "Allow users to elaborate on their relationships with others"
+dependencies[] = user_relationships_api
+package = "User Relationships"
+core = 7.x
+files[]=user_relationship_elaborations.module

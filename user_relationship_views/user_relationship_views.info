@@ -1,0 +1,18 @@
+; $Id$
+name = UR-Views
+description = "Integrates User Relationships with Views"
+dependencies[] = user_relationships_api
+dependencies[] = views
+core = 7.x
+package = "User Relationships"
+files[] = user_relationship_views.views.inc
+files[] = user_relationship_views.views_default.inc
+files[] = views_handler_field_user_relationships_name.inc
+files[] = views_handler_field_user_relationships_oneway.inc
+files[] = views_handler_field_user_relationships_requester.inc
+files[] = views_handler_field_user_relationships_requestee.inc
+files[] = views_handler_field_user_relationships_status.inc
+files[] = views_handler_field_user_relationships_status_link.inc
+files[] = views_handler_filter_user_relationships_requester_or_requestee_current_user.inc
+files[] = views_handler_filter_user_relationships_status.inc
+files[] = views_handler_filter_user_relationships_type.inc

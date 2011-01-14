@@ -1,0 +1,9 @@
+; $Id$
+name = UR-Invite
+description = "Gives users the option of specifying a relationship when inviting new users"
+dependencies[] = user_relationships_api
+dependencies[] = user_relationships_ui
+dependencies[] = invite
+core = 6.x
+package = "User Relationships"
+files[]=user_relationship_invites.module
