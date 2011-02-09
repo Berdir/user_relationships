@@ -19,22 +19,19 @@ define('UR_BLOCK_USER', 'user');
 
 
 /**
- * User Relationship Type hook
- *
- * This ensures our settings table is always up to date
+ * Implements hook_user_relationships_type_save().
  */
-function user_relationship_blocks_user_relationships_type($op, &$rtype) {
-  switch ($op) {
-  case 'insert':
-    _user_relationship_blocks_insert_defaults();
-    break;
+function user_relationship_blocks_user_relationships_type_insert($rtype) {
+  _user_relationship_blocks_insert_defaults();
+}
 
-  case 'delete':
-    db_delete('user_relationship_blocks')
-      ->condition('bid', '%' . UR_BLOCK_SEPARATOR . $rtype->rtid)
-      ->execute();
-    break;
-  }
+/**
+ * Implements hook_user_relationships_type_delete().
+ */
+function user_relationship_blocks_user_relationships_type_delete($rtype) {
+  db_delete('user_relationship_blocks')
+    ->condition('bid', '%' . UR_BLOCK_SEPARATOR . $rtype->rtid)
+    ->execute();
 }
 
 /**

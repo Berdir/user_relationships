@@ -2,8 +2,10 @@
 // $Id$
 
 /**
- * @file:
+ * @file
  * provides the activity implementation for user_relationships_api module
+ * @todo: Port to D7 once activity.module is available. Maybe move to separate
+ *        module.
  */
 
 /**

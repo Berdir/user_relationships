@@ -62,7 +62,7 @@ function user_relationships_type_load($param = array(), $reset = NULL) {
 
 
 /**
- * Public API for loading the full list of relationship types
+ * Public API for loading the full list of relationship types.
  *
  * @param $reset
  *    a boolean that forces a reset of the internal static types list
@@ -93,7 +93,7 @@ function user_relationships_types_load($reset = NULL) {
     }
   }
 
-  _user_relationships_invoke('load', $relationship_types_list, TRUE);
+  module_invoke_all('user_relationships_type_load', $relationship_types_list);
 
   return $relationship_types_list;
 }
@@ -106,7 +106,7 @@ function user_relationships_types_load($reset = NULL) {
  *   A User Relationship type object
  */
 function user_relationships_type_save($rtype) {
-  _user_relationships_invoke('presave', $rtype, TRUE);
+  module_invoke_all('user_relationships_type_presave', $rtype);
 
   $op = (isset($rtype->rtid) && $rtype->rtid) ? 'update' : 'insert';
 
@@ -127,7 +127,7 @@ function user_relationships_type_save($rtype) {
 
   drupal_write_record('user_relationship_types', $rtype, ($op == 'update' ? 'rtid' : array()));
 
-  _user_relationships_invoke($op, $rtype, TRUE);
+  module_invoke_all('user_relationships_type_' . $op, $rtype);
 }
 
 
@@ -146,8 +146,14 @@ function user_relationships_type_delete($rtid) {
   db_delete('user_relationships')
     ->condition('rtid', $rtid)
     ->execute();
+  db_delete('user_relationship_type_roles')
+    ->condition('rtid', $rtid)
+    ->execute();
+  db_delete('user_relationship_type_roles_receive')
+    ->condition('rtid', $rtid)
+    ->execute();
 
-  _user_relationships_invoke('delete', $rtype, TRUE);
+  module_invoke_all('user_relationships_type_delete', $rtype);
 }
 
 
@@ -224,30 +230,28 @@ function user_relationships_request_relationship($requester, $requestee = NULL, 
  * Create or update a user relationship.
  *
  * @param $relationship
- *   object of the current relationship
- * @param $op
- *   the reason for the update
+ *   Object of the current relationship.
+ * @param $action
+ *   The reason for the update (request, approve, update).
  *
  * @return
- *    object of the updated relationship
- *    or
- *    false if the relationship wasn't able to save
+ *   Object of the updated relationship or FALSE if the relationship wasn't
+ *   able to save
  */
-function user_relationships_save_relationship($relationship, $op = 'request') {
+function user_relationships_save_relationship($relationship, $action = 'request') {
   //set basic info if it doesn't already exist
   !isset($relationship->flags) ? $relationship->flags = UR_OK : NULL;
-  !isset($relationship->created_at) ? $relationship->created_at = time() : NULL;
-  $relationship->updated_at = time();
+  !isset($relationship->created_at) ? $relationship->created_at = REQUEST_TIME : NULL;
+  $relationship->updated_at = REQUEST_TIME;
 
-  if ($op == 'approve') {
+  if ($action == 'approve') {
     $relationship->approved = 1;
   }
 
   // Start a transaction so that we can roll back in case of an error.
   $transaction = db_transaction();
   try {
-
-    _user_relationships_invoke('presave', $relationship);
+    module_invoke_all('user_relationships_presave', $relationship);
 
     if (isset($relationship->rid)) {
       // Delete possible requests coming the other direction
@@ -268,6 +272,8 @@ function user_relationships_save_relationship($relationship, $op = 'request') {
       $relationship_type = user_relationships_type_load($relationship->rtid);
       if ($relationship->approved && !$relationship_type->is_oneway) {
         //#365623 drupal_write_record will not work because rid is a serial field, and we need to use the same rid
+        // @todo: Verify that this doesn't cause problems when an existing
+        // relationship is updated again after being approved.
         $select = db_select('user_relationships', 'ur')
           ->fields('ur', array('rid', 'requester_id', 'requestee_id', 'rtid', 'approved', 'created_at', 'updated_at', 'flags'))
           ->condition('rid', $relationship->rid);
@@ -275,14 +281,17 @@ function user_relationships_save_relationship($relationship, $op = 'request') {
           ->fields(array('rid', 'requestee_id', 'requester_id', 'rtid', 'approved', 'created_at', 'updated_at', 'flags'))
           ->from($select)
           ->execute();
-     }
+      }
     }
 
-    _user_relationships_invoke($op, $relationship);
+    // Don't execute a different hook for update/insert since that is not
+    // relevant. The $action is important if someone needs to differentiate.
+    module_invoke_all('user_relationships_save', $relationship, $action);
     return $relationship;
   }
   catch (Exception $e) {
-    $transaction->rollback('user_relationships', $e, array(), WATCHDOG_ERROR);
+    $transaction->rollback();
+    watchdog_exception('user_relationships', $e);
     return FALSE;
   }
 }
@@ -295,16 +304,16 @@ function user_relationships_save_relationship($relationship, $op = 'request') {
  *    object of the relationship
  * @param $deleted_by
  *    object of the user that initiated the delete command
- * @param $op
+ * @param $action
  *    string reason for removal ('cancel','disapprove','remove')
  */
-function user_relationships_delete_relationship($relationship, $deleted_by, $op = 'remove') {
+function user_relationships_delete_relationship($relationship, $deleted_by, $action = 'remove') {
   $relationship->deleted_by = $deleted_by;
   db_delete('user_relationships')
     ->condition('rid', $relationship->rid)
     ->execute();
 
-  _user_relationships_invoke($op, $relationship);
+  module_invoke_all('user_relationships_delete', $relationship, $action);
 }
 
 
@@ -407,9 +416,19 @@ function user_relationships_load($param = array(), $options = array(), $reset = 
   if (isset($rid) && !isset($relationships[$rid])) {
     return FALSE;
   }
-  $return = isset($rid) ? $relationships[$rid] : $relationships;
-  _user_relationships_invoke('load', $return);
 
+  // Always call the hook with an array, even though there is only single entry.
+  if (isset($rid)) {
+    $return = $relationships[$rid];
+    module_invoke_all('user_relationships_load', array($rid => $return));
+  }
+  else {
+    $return = $relationships;
+    // Only execute the hook if the array is not empty.
+    if (!empty($return)) {
+      module_invoke_all('user_relationships_load', $return);
+    }
+  }
   return $return;
 }
 
@@ -502,13 +521,4 @@ function user_relationships_api_can_receive($requestee, $relationship_type) {
     }
   }
   return FALSE;
-}
-
-/**
- * Implements the hook_cck_field_privacy_access to allow users to display privacy fields
- * based on a relationship with other users
- */
-function user_relationships_api_cck_field_privacy_access($requestee, $requester) {
-  $relationship = user_relationships_load(array('between' => array($requestee->uid, $requester->uid), 'approved' => TRUE), array('count' => TRUE), FALSE);
-  return $relationship;
 }

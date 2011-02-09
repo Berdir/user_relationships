@@ -888,14 +888,7 @@ function template_preprocess_user_relationships(&$variables) {
   $variables['relationships_per_page'] = variable_get('user_relationships_relationships_per_page', 16);
   $options = array('include_user_info' => TRUE, 'paging' => $variables['relationships_per_page']);
 
-  $query = _user_relationships_generate_query($args, $options);
-  $result = $query->execute();
-
-  $variables['relationships'] = array();
-  foreach ($result as $relationship) {
-    user_relationships_api_translate_user_info($relationship);
-    $variables['relationships'][$relationship->rid] = $relationship;
-  }
+  $variables['relationships'] = user_relationships_load($args, $options);
 
   if ($account->uid == $user->uid) {
     $msg = isset($variables['relationship_type'])
@@ -934,13 +927,7 @@ function template_preprocess_user_relationships_pending_requests(&$variables) {
     // To Page or not to Page
     $options = array('include_user_info' => TRUE, 'paging' => $variables['relationships_per_page']);
 
-    $query = _user_relationships_generate_query(array($column => $account->uid, 'approved' => FALSE), $options);
-    $result = $query->execute();
-
-    foreach ($result as $relationship) {
-      user_relationships_api_translate_user_info($relationship);
-      $variables[$section][$relationship->rid] = $relationship;
-    }
+    $variables[$section] = user_relationships_load(array($column => $account->uid, 'approved' => FALSE), $options);
   }
 }
 

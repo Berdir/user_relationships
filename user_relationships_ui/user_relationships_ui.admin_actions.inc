@@ -61,7 +61,7 @@ function user_relationships_ui_type_edit_submit($form, &$form_state) {
     _user_relationships_ui_update_translations($relationship_type);
 
     $form_state['values']['rtid'] = $relationship_type->rtid;
-    _user_relationships_invoke('insert', $relationship_type, TRUE);
+    module_invoke_all('user_relationships_type_insert', $relationship_type);
 
     drupal_set_message(t('Relationship %name has been added.', array('%name' => $relationship_type->name)));
     watchdog(
@@ -80,8 +80,7 @@ function user_relationships_ui_type_edit_submit($form, &$form_state) {
 
     // Update strings for translation
     _user_relationships_ui_update_translations($relationship_type);
-
-    _user_relationships_invoke('update', $relationship_type, TRUE);
+    module_invoke_all('user_relationships_type_update', $relationship_type);
 
     drupal_set_message(t('Relationship %name has been updated.', array('%name' => $relationship_type->name)));
     watchdog(
@@ -145,7 +144,7 @@ function user_relationships_ui_type_delete_submit($form, &$form_state) {
     ->condition('rtid', $relationship_type->rtid)
     ->execute();
 
-  _user_relationships_invoke('delete', $relationship_type, TRUE);
+  module_invoke_all('user_relationships_type_delete', $relationship_type);
 
   // #371311 force menu rebuild
   user_relationships_types_load(TRUE);

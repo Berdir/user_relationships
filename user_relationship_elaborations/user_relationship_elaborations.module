@@ -54,48 +54,28 @@ function user_relationships_get_elaboration($rid) {
 }
 
 /**
- * hook_user_relationships()
+ * Implements hook_user_relationships_delete().
  */
-function user_relationship_elaborations_user_relationships($op, &$relationships) {
-  if (!is_array($relationships)) {
-    if (!isset($relationships->rid)) {
-      return;
-    }
-    if (in_array($op, array('cancel', 'delete', 'remove', 'disapprove'))) {
-      db_delete('user_relationship_elaborations')
-        ->condition('rid', $relationships->rid)
-        ->execute();
-    }
-    else {
-      //load elaboration string
-      $elaboration = db_query('SELECT elaboration FROM {user_relationship_elaborations} WHERE rid = :rid', array(':rid' => $relationships->rid))->fetchField();
-      if ($elaboration) {
-        $relationships->elaboration = $elaboration;
-      }
-    }
-  }
-  else {
-    //have several relationships to process
-    $rids = array();
-    //collect rids from the array
-    _user_relationship_elaborations_walk_recursive('find_rids', $relationships, $rids);
-
-    if ($rids) {
-      if (in_array($op, array('cancel', 'delete', 'remove', 'disapprove'))) {
-         db_delete('user_relationship_elaborations')
-          ->condition('rid', $relationships->rid)
-          ->execute();
-      }
-      else {
-        //load elaboration data into these relationships
-        $elaborations = db_query('SELECT rid, elaboration FROM {user_relationship_elaborations} WHERE rid IN (:rids)', array(':rids' => $rids))->fetchAllKeyed();
-
-        _user_relationship_elaborations_walk_recursive('load', $relationships, $elaborations);
-      }
-    }
-  }
+function user_relationship_elaborations_user_relationships_delete($relationship, $action) {
+  db_delete('user_relationship_elaborations')
+    ->condition('rid', $relationship->rid)
+    ->execute();
 }
 
+/**
+ * Implements hook_user_relationships_load()
+ */
+function user_relationship_elaborations_user_relationships_load($relationships) {
+  $rids = array();
+  // Collect rids from the array.
+  _user_relationship_elaborations_walk_recursive('find_rids', $relationships, $rids);
+
+  if ($rids) {
+    // Load elaboration data into these relationships.
+    $elaborations = db_query('SELECT rid, elaboration FROM {user_relationship_elaborations} WHERE rid IN (:rids)', array(':rids' => $rids))->fetchAllKeyed();
+    _user_relationship_elaborations_walk_recursive('load', $relationships, $elaborations);
+  }
+}
 
 /**
  * array_walk_recursive doesn't pass extra data by reference (lame!) so
@@ -125,7 +105,6 @@ function _user_relationship_elaborations_walk_recursive($action, &$relationships
  */
 function user_relationship_elaborations_preprocess_user_relationships(&$variables) {
   if (!variable_get('user_relationships_elaborations_api_only', FALSE)) {
-    user_relationship_elaborations_user_relationships('load', $variables['relationships']);
     foreach ($variables['relationships'] as $rid => $relationship) {
       $variables['relationships'][$rid]->extra_for_display .= isset($variables['relationships'][$rid]->elaboration) ? check_plain($variables['relationships'][$rid]->elaboration) : '';
     }

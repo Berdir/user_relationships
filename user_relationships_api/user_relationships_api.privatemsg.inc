@@ -1,7 +1,9 @@
 <?php
 // $Id$
+
 /**
- * @file Integration with Privatemsg module
+ * @file
+ * Integration with Privatemsg module
  * @author mansspams http://drupal.org/user/293179
  * @author alex.k http://drupal.org/user/183217
  */

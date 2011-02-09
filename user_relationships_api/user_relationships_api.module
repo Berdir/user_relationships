@@ -21,20 +21,6 @@ if (module_exists('privatemsg')) {
 }
 
 /**
- *  Invoke hook_user_relationships() or hook_user_relationships_type()
- *  Just a helper that allows us to pass the relationship or relationship_type
- *  object by reference
- */
-function _user_relationships_invoke($type, &$relationship, $is_type = FALSE) {
-  $hook = 'user_relationships'. ($is_type ? '_type' : '');
-  foreach (module_implements($hook) as $module) {
-    $function = $module .'_'. $hook;
-    $function($type, $relationship);
-  }
-}
-
-
-/**
  * Helper function to generate the main and count queries from a list of parameters and options
  */
 function _user_relationships_generate_query($param = array(), $options = array()) {
@@ -175,7 +161,7 @@ function user_relationships_api_permission() {
  * hook_cron()
  */
 function user_relationships_api_cron() {
-  $now = time();
+  $now = REQUEST_TIME;
 
   // only expire relationships once a day
   $last_cron = variable_get('user_relationships_last_expire', 0);
@@ -198,7 +184,7 @@ function user_relationships_api_cron() {
       ->condition('rid', $expired_requests)
       ->execute();
     //FIXME: this will trigger various hook_user_relationships() but will not pass a valid relationship object. E.g. in mailer.
-    _user_relationships_invoke('delete', $expired_requests);
+    module_invoke_all('user_relationships_delete', $expired_requests);
   }
 
   // remember when we last expired relationships
@@ -232,31 +218,7 @@ function ur_tt($name, $string, $langcode = NULL, $update = FALSE) {
 }
 
 /**
- * Implementation of hook_user_relationships().
- * or
- * Implementation of hook_trigger_name().
- */
-function user_relationships_api_user_relationships($op, &$relationship) {
-  if ($op != 'approve' && $op != 'request') {
-    return;
-  }
-  if (module_exists('trigger')) {
-    $aids = trigger_get_assigned_actions('user_relationships_api');
-
-    $context = array(
-      'hook' => 'user_relationships_api',
-      'op' => $op,
-      'requester' => $relationship->requester,
-      'requestee' => $relationship->requestee,
-      'relationship' => $relationship,
-    );
-//print_r($relationship);
-    actions_do(array_keys($aids), $relationship, $context);
-  }
-}
-
-/**
- * Implementation of hook_activity_info().
+ * Implements hook_activity_info().
  */
 function user_relationships_api_activity_info() {
   $info = new stdClass();
@@ -272,8 +234,8 @@ function user_relationships_api_activity_info() {
 }
 
 /**
-* Implementation of hook_token_list().
-*/
+ * Implements hook_token_list().
+ */
 function user_relationships_api_token_list($type = 'all') {
   if ($type == 'requester') {
     $tokens['user_relationships_api'] = array(
@@ -290,8 +252,8 @@ function user_relationships_api_token_list($type = 'all') {
 }
 
 /**
-* Implementation of hook_token_values().
-*/
+ * Implements hook_token_values().
+ */
 function user_relationships_api_token_values($type, $data = NULL, $options = array()) {
   if ($type == 'requester') {
     $r = $data;
@@ -323,7 +285,7 @@ function user_relationships_api_token_values($type, $data = NULL, $options = arr
 
     $token_values = array(
       'requestee' => theme('username', array('account' => user_load($r->requestee_id))),
-      'requester' => theme('username',array('account' => user_load($r->requester_id))),
+      'requester' => theme('username', array('account' => user_load($r->requester_id))),
       'relationship-name' => drupal_placeholder($r_type->name),
     );
   }

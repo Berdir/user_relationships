@@ -102,24 +102,18 @@ function user_relationship_mailer_mail($op, &$message, $replacements) {
   $message['body']    = array(t(variable_get("user_relationship_mailer_{$op}_message", $defaults['message']), $replacements));
 }
 
+/**
+ * Implements hook_user_relationships_save()
+ */
+function user_relationship_mailer_user_relationships_save($relationship, $action) {
+  user_relationship_mailer_send_email($action, $relationship);
+}
 
 /**
- * Implements hook_user_relationships()
+ * Implements hook_user_relationships_save()
  */
-function user_relationship_mailer_user_relationships($op, $relationship) {
-  switch ($op) {
-    //request|delete|cancel|approve|disapprove|remove|pre_approved
-    case 'request':
-    case 'post-save':
-    case 'delete':
-    case 'remove':
-    case 'approve':
-    case 'disapprove':
-    case 'cancel':
-    case 'pre_approved':
-      user_relationship_mailer_send_email($op, $relationship);
-      break;
-  }
+function user_relationship_mailer_user_relationships_delete($relationship, $action) {
+  user_relationship_mailer_send_email($action, $relationship);
 }
 
 /**

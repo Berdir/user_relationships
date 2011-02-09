@@ -16,7 +16,7 @@
 
   $i = 0;
   foreach ($sections as $column => $section) {
-    if (!isset($$section)) { continue; }
+    if (empty($$section)) { continue; }
     $rows = array();
 
     $header = array(array('data' => $section_headings[$section], 'colspan' => 2));

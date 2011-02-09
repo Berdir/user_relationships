@@ -73,6 +73,11 @@ function user_relationship_defaults_load($reset = FALSE) {
       $default->user_name         = $default->user->name;
       $default->relationship_type = user_relationships_type_load($default->rtid);
 
+      // Ignore default if relationship type does not exist.
+      if (empty($default->relationship_type)) {
+        continue;
+      }
+
       foreach ((array)$default->relationship_type as $column => $value) {
         $default->$column = $value;
       }
@@ -289,10 +294,8 @@ function user_relationship_defaults_user_relationships_page_alter($page_id, &$pa
 /**
  * hook_user_relationships()
  */
-function user_relationship_defaults_user_relationships($op, &$relationship_type) {
-  if ($op == 'delete type') {
-    db_delete('user_relationship_defaults')
-      ->condition('rtid', $relationship_type->rtid)
-      ->execute();
-  }
+function user_relationship_defaults_user_relationships_type_delete($relationship_type) {
+  db_delete('user_relationship_defaults')
+    ->condition('rtid', $relationship_type->rtid)
+    ->execute();
 }

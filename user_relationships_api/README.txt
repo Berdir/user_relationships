@@ -7,8 +7,8 @@ modules. It provides no frontend interface.
 
 Developers
 ------------
-There are a number of API functions and two hooks. The API functions are all defined in
-user_relationships_api.api.inc. I've provded a list below for quick lookup, but you'll
+There are a number of API functions and corresponding hooks. The hooks are documented in user_relationships_api.api.php.
+The API functions are all defined in user_relationships_api.api.inc. I've provded a list below for quick lookup, but you'll
 need to see the documentation in that file for a deeper explanaition.
 
   Functions
@@ -24,22 +24,3 @@ need to see the documentation in that file for a deeper explanaition.
   user_relationships_save_relationship($relationship, $op = 'request')
   user_relationships_delete_relationship($relationship, &$deleted_by, $op = 'remove')
 
-
-  Hooks
-  =====
-  hook_user_relationships_type($op, &$relationship_type)
-    presave | When either saving a new relationship type or updating an existing relationship type
-    insert  | After saving a new relationship type
-    update  | After saving an existing relationship type
-    delete  | After deleting a relationship type
-    load    | When a relationship type is loaded
-
-  hook_user_relationships($op, &$relationship)
-    load        | When a relationship is loaded
-    presave     | When either saving a new relationship or updating an existing relationship
-    request     | After a new relationship has been requested
-    cancel      | When a relationship has been removed (specifically cancelled)
-    update      | After saving an existing relationship
-    approve     | After approving a relationship
-    disapprove  | When a relationship has been removed (specifically disapproved)
-    remove      | When a relationship has been removed

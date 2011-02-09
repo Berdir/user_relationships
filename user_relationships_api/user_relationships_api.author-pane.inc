@@ -2,13 +2,14 @@
 // $Id$
 
 /**
- * @file integration with Author Pane
+ * @file
+ * integration with Author Pane for User Relationships API
  * @author Alex Karshakevich http://drupal.org/user/183217
- **/
+ */
 
 /**
-* Implementation of hook_preprocess_author_pane().
-*/
+ * Implements hook_preprocess_author_pane().
+ */
 function user_relationships_api_preprocess_author_pane(&$variables) {
   // Check if this preprocess needs to be run given who's calling it.
   if (function_exists('author_pane_run_preprocess') && !author_pane_run_preprocess('user_relationships_api', $variables['caller'])) {
@@ -45,7 +46,7 @@ function user_relationships_api_preprocess_author_pane(&$variables) {
       // there should only be one.)
       foreach ($relationships as $rtid => $relationship) {
         $link_label = t('Remove @name from @rel_plural_name', array('@name' => format_username($account), '@rel_plural_name' => $relationship->plural_name));
-        $css_class = str_replace(' ', '-', $relationship->name) .' author-pane-link user_relationships_popup_link author-relationship-remove-icon';
+        $css_class = array(str_replace(' ', '-', $relationship->name), 'author-pane-link', 'user_relationships_popup_link', 'author-relationship-remove-icon');
         //link to remove
         if (!isset($variables['user_relationships_api'])) {
           $variables['user_relationships_api'] = '';
@@ -69,7 +70,7 @@ function user_relationships_api_preprocess_author_pane(&$variables) {
       }
       $relationships_count = user_relationships_load(array('between' => array($user->uid, $account->uid)), array('count' => TRUE));
       $link_label = t('Add @rel_name', array('@rel_name' => ur_tt("user_relationships:rtid:$rtype->rtid:name", $rtype->name)));
-      $css_class = str_replace(' ', '-', $rtype->name) .' author-pane-link user_relationships_popup_link author-relationship-add-icon';
+      $css_class = array(str_replace(' ', '-', $relationship->name), 'author-pane-link', 'user_relationships_popup_link', 'author-relationship-remove-icon');
       //add link
       if (!isset($variables['user_relationships_api'])) {
         $variables['user_relationships_api'] = '';
@@ -93,8 +94,8 @@ function user_relationships_api_preprocess_author_pane(&$variables) {
 }
 
 /**
-* Implementation of hook_author_pane_allow_preprocess_disable().
-*/
+ * Implements hook_author_pane_allow_preprocess_disable().
+ */
 function user_relationships_api_author_pane_allow_preprocess_disable() {
   return array('user_relationships_api' => 'User Relationships');
 }
