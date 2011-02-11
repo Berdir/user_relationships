@@ -7,7 +7,7 @@
  */
 $output = array();
 
-if ($current_relationships) {
+if (!empty($current_relationships)) {
   $output[] = theme('item_list', array('items' => $current_relationships, 'title' => t('Your relationships to this user'), 'attributes' => array('class' => 'user_relationships')));
 }
 

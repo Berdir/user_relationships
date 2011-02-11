@@ -185,16 +185,6 @@ function user_relationship_blocks_block_configure($delta) {
     '#type'   => 'hidden',
     '#value'  => $delta,
   );
-  $form['get_account'] = array(
-    '#type'           => 'textarea',
-    '#size'           => 4,
-    '#weight'         => 1,
-//    '#required'       => TRUE,
-    '#title'          => t('Return uid of the target user'),
-    '#description'    => t("(EXPERT ONLY) Enter a php snippet, surrounded by %php_snippet, which returns a numeric user id you want to work on. By default, for user pages, it is the user being viewed. For nodes or blogs, it is the node author. Clear the field to restore this default.", array('%php_snippet' => '<?php ?>')),
-    '#default_value'  => $settings->get_account,
-  );
-
   return $form;
 }
 
@@ -216,8 +206,7 @@ function user_relationship_blocks_block_view($delta) {
   }
   list($block_type, $rtid, $extra) = $exploded;
 
-
-  $is_my_block = ($block_type == UR_BLOCK_MY || $block_type == 'pending');
+  $is_my_block = ($block_type == UR_BLOCK_MY || in_array($block_type, array('pending')));
   if ($is_my_block && !$user->uid) {
     return;
   }
@@ -230,7 +219,7 @@ function user_relationship_blocks_block_view($delta) {
   if ($is_my_block && $user->uid) {
     $account = $user;
   }
-  else if (module_exists('php') && !empty($settings->get_account) && $uid = php_eval($settings->get_account)) {
+  else if ($uid = _user_relationship_blocks_get_uid($delta)) {
     $account = user_load($uid);
   }
 
@@ -245,21 +234,34 @@ function user_relationship_blocks_block_view($delta) {
 
 
 /**
- *  Default get_account php
- *  This will retrieve the author of the node being viewed or the user being viewed
+ * Figure out which account is currently viewed.
+ *
+ * @param $delta
+ *   The delta of the block that is currently viewed.
+ *
+ * @return
+ *   Either the uid of the user owning the displayed profile, node or blog.
  */
-function _user_relationship_blocks_find_user_php() {
-  return <<<PHP
-<?php
-  if (arg(0) == 'node' && is_numeric(arg(1))) {
-    \$node = node_load(arg(1));
-    return \$node->uid;
+function _user_relationship_blocks_get_uid($delta) {
+
+  // Call hook, this allows other modules to declare other ways to detect the
+  // currently viewed user.
+  foreach (module_implements('user_relationship_blocks_get_uid') as $module) {
+    $function = $module . '_user_relationship_blocks_get_uid';
+    if ($uid = $function($delta)) {
+      return $uid;
+    }
   }
-  else if ((arg(0) == 'user' || arg(0) == 'blog') && is_numeric(arg(1))) {
+
+  if ($node = menu_get_object()) {
+    return $node->uid;
+  }
+  if ($user = menu_get_object('user')) {
+    return $user->uid;
+  }
+  if (arg(0) == 'blog' && arg(1) > 0) {
     return arg(1);
   }
-?>
-PHP;
 }
 
 
@@ -317,10 +319,6 @@ function user_relationship_blocks_block_save($delta = NULL, $edit = NULL) {
   static $settings = array();
 
   if (isset($edit)) {
-    //can't find a better spot for this. If get_account php snippet is cleared by user, revert to default value
-    if (empty($edit['get_account'])) {
-      $edit['get_account'] = _user_relationship_blocks_find_user_php();
-    }
     if (empty($edit['bid'])) {
       $edit['bid'] = $edit['delta'];
     }

@@ -14,7 +14,6 @@ function user_relationship_blocks_schema() {
       'bid'         => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
       'size'        => array('type' => 'int', 'unsigned' => TRUE, 'default' => 10),
       'sort'        => array('type' => 'varchar', 'length' => 255, 'default' => 'newest'),
-      'get_account' => array('type' => 'text', 'not null' => TRUE, 'size' => 'big'),
     ),
     'primary key' => array('bid'),
   );
@@ -54,5 +53,12 @@ function user_relationship_blocks_update_6100() {
   $ret = array();
   $ret[] = update_sql("UPDATE {blocks} SET cache = -1 WHERE module = 'user_relationship_blocks' AND delta IN ('actions', 'pending', 'user-all', 'my-all')"); 
   return $ret;
+}
+
+/**
+ * Drop unecessary get_account column.
+ */
+function user_relationship_blocks_update_7000() {
+  db_drop_field('user_relationship_blocks', 'get_account');
 }
 
