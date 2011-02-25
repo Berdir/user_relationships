@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @author Drupal 6 port by Darren Ferguson <http://drupal.org/user/70179>
  * @author Written by scottgifford http://drupal.org/user/245699

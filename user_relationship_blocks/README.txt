@@ -1,4 +1,3 @@
-$Id$
 
 User Relationship Blocks
 ------------------------

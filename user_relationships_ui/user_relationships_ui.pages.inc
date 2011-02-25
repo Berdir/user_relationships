@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Various user relationships admin and user pages

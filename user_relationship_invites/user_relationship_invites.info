@@ -1,4 +1,3 @@
-; $Id$
 name = UR-Invite
 description = "Gives users the option of specifying a relationship when inviting new users"
 dependencies[] = user_relationships_api

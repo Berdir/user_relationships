@@ -1,4 +1,3 @@
-; $Id$
 name = UR-Elaborations
 description = "Allow users to elaborate on their relationships with others"
 dependencies[] = user_relationships_api

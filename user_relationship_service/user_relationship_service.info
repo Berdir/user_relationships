@@ -1,4 +1,3 @@
-; $Id$
 name = UR-Services
 description = Provides functions of User Relationships to Services module.
 package = "User Relationships"

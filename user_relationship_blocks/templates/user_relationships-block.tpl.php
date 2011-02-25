@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file Main relationships listing block
  * List the relationships between the viewed user and the current user

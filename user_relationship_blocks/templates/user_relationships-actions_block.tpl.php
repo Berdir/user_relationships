@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file 
  * Template of relationships add/remove block

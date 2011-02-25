@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file User Relationships Mailer implementation. Contains all default strings and action definitions
  */

@@ -1,4 +1,3 @@
-; $Id$
 name = UR-Mailer
 description = "Gives the option to mail users when about relationship events (request, remove, disapprove, approve, etc)"
 dependencies[] = user_relationships_api

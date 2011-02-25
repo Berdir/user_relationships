@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Page to manage sent and received relationship requests

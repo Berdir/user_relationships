@@ -1,4 +1,3 @@
-; $Id$
 name = UR-API
 description = "API for User Relationships. This only provides the programming interface."
 package = "User Relationships"

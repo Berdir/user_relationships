@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 //$relationships array is loaded in template_preprocess_user_relationships()
 if ($relationships) {

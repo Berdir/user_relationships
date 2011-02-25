@@ -1,4 +1,3 @@
-; $Id$
 name = UR-Node Access
 description = "Provides per node access control based on relationship to author"
 dependencies[] = user_relationships_api
