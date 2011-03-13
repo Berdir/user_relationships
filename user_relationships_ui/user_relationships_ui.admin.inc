@@ -220,6 +220,7 @@ function user_relationships_ui_type_edit($form, &$form_state, $relationship_type
     '#maxlength'      => 255,
     '#default_value'  => isset($relationship_type) ? $relationship_type->plural_name : NULL,
     '#description'    => t("Example: buddies, friends, coworkers, spouses."),
+    '#required'       => TRUE,
     '#weight'         => -9,
   );
   $form['general']['requires_approval'] = array(
