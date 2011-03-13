@@ -31,9 +31,10 @@ function user_relationship_invites_get_invite($code) {
  * Implementation of hook_form_alter().
 */
 function user_relationship_invites_form_invite_form_alter(&$form, $form_state) {
+  global $user;
   $new_user = drupal_anonymous_user();
   module_load_include('inc', 'user_relationships_ui', 'user_relationships_ui.forms');
-  $form += user_relationships_ui_request_form($user, $new_user, $form_state['values']);
+  $form += user_relationships_ui_request_form($user, $new_user, isset($form_state['values']) ? $form_state['values'] : array());
   $form['rtid']['#weight'] = 0;
   $form['#validate'][] = 'user_relationship_invites_invite_form_validate';
 }
