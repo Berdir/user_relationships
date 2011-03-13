@@ -350,7 +350,6 @@ function _user_relationship_blocks_insert_defaults() {
           'bid' => $bid,
           'size' => 10,
           'sort' => 'newest',
-          'get_account' => _user_relationship_blocks_find_user_php(),
         ))
         ->execute();
     }
