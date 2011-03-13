@@ -23,12 +23,12 @@ function user_relationships_api_preprocess_author_pane(&$variables) {
     return;
   }
 
-  $rtids = variable_get('user_relationships_api_author_pane_rtids', 0);
+  $rtids = variable_get('user_relationships_api_author_pane_rtids', array());
   if (!is_array($rtids)) {
     $rtids = array($rtids);//wrap into array for now, while selection is single
   }
   if (!count($rtids)) {
-    $return;
+   return;
   }
   // Get a list of selected relationship types
   $all_rtypes = user_relationships_types_load();
