@@ -61,34 +61,32 @@ function user_relationships_type_load($param = array(), $reset = NULL) {
 
 
 /**
- * Public API for loading the full list of relationship types.
+ * Load all relationship types.
  *
  * @param $reset
- *    a boolean that forces a reset of the internal static types list
+ *   A boolean that forces a reset of the internal static types list
  *
  * @return
- *    array of relationship_type objects
+ *   Array of relationship_type objects
  */
 function user_relationships_types_load($reset = NULL) {
   static $relationship_types_list = array();
 
   if ($reset || empty($relationship_types_list)) {
-    //clear the cached list, since some relationships may have disappeared
+    // Clear the cached list, since some relationships may have disappeared.
     $relationship_types_list = db_query("SELECT * FROM {user_relationship_types}")->fetchAllAssoc('rtid');
-    //load role permissions for all types
-    $result = db_query('SELECT rtid, rid FROM {user_relationship_type_roles} ORDER BY rtid, rid');
+    // Load role permissions for all types.
+    $result = db_query('SELECT rtid, rid FROM {user_relationship_type_roles} WHERE rtid IN (:rtids) ORDER BY rtid, rid', array(':rtids' => array_keys($relationship_types_list)));
     foreach ($result as $mapping) {
-      $rtype = $relationship_types_list[$mapping->rtid];
-      // //roles is an associative array {role id} => {role id}
-      $rtype->roles[$mapping->rid] = $mapping->rid;//] = $mapping->name;
+      // roles is an associative array {role id} => {role id}.
+      $relationship_types_list[$mapping->rtid]->roles[$mapping->rid] = $mapping->rid;//] = $mapping->name;
     }
 
-    //load role receive permissions for all types
-    $results = db_query('SELECT rtid, rid FROM {user_relationship_type_roles_receive} ORDER BY rtid, rid');
+    // Load role receive permissions for all types.
+    $results = db_query('SELECT rtid, rid FROM {user_relationship_type_roles_receive} WHERE rtid IN (:rtids) ORDER BY rtid, rid', array(':rtids' => array_keys($relationship_types_list)));
     foreach ($results as $mapping) {
-      $rtype = $relationship_types_list[$mapping->rtid];
-      // //roles is an associative array {role id} => {role id}
-      $rtype->roles_receive[$mapping->rid] = $mapping->rid;//] = $mapping->name;
+      // roles_receive is an associative array {role id} => {role id}.
+      $relationship_types_list[$mapping->rtid]->roles_receive[$mapping->rid] = $mapping->rid;
     }
   }
 
