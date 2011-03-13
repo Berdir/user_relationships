@@ -230,7 +230,7 @@ function user_relationsihp_node_access_update_node($node) {
     ->execute();
 
   $user_relationship_node_access = array();
-  if (is_array($node->user_relationship_node_access)) {
+  if (!empty($node->user_relationship_node_access) && count($node->user_relationship_node_access)) {
     // Reformat the array and optimize.
     foreach ($node->user_relationship_node_access as $action => $permissions) {
       foreach ($permissions as $key => $permission) {
