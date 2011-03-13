@@ -47,9 +47,8 @@ User Relationships: {Relationship Type}
 
 
 * A note about the user being viewed:
-  This user is found using a PHP function. It can be configured per block to be specific to your site.
-  This is for more expert users (and is really only needed by expert users). You can find the current
-  default code in the "_user_relationship_blocks_find_user_php" function in "user_relationship_blocks.module"
+  This user is found using _user_relationship_blocks_get_uid(). This can be
+  overriden by implementhing hook_user_relationship_blocks_get_uid().
 
 
 Theme Developers
