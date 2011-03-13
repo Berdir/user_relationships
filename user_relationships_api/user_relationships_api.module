@@ -11,13 +11,8 @@
 define('UR_OK', 0x0);
 define('UR_BANNED', 0x1);
 
-// Pre Loading files that will be required in this module
-foreach (array('api', 'actions', 'socnet') as $file) {
-  module_load_include("inc", "user_relationships_api", "user_relationships_api.{$file}");
-}
-if (module_exists('privatemsg')) {
-  module_load_include('inc', 'user_relationships_api', 'user_relationships_api.privatemsg');
-}
+// @todo Move functions into this file and remove the explicit include.
+module_load_include("inc", "user_relationships_api", "user_relationships_api.api");
 
 /**
  * Helper function to generate the main and count queries from a list of parameters and options
@@ -130,7 +125,8 @@ function _user_relationships_generate_query($param = array(), $options = array()
     }
   }
   if (!empty($limit)) {
-    $query->range(0, $limit);
+    $offset = !empty($offset) ? $offset : 0;
+    $query->range($offset, $limit);
   }
   if (!empty($only_count)) {
     return $count;

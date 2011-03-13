@@ -55,37 +55,6 @@ function user_relationships_ui_settings() {
       'is_numeric' => array('msg' => t('The relationships per page setting is not an integer'))
     )))
   );
-  if (module_exists('privatemsg')) {
-    $form['privatemsg'] = array(
-      '#type'   => 'fieldset',
-      '#title'  => t('Private Message Integration'),
-      '#description'    => t('Configure integration with the Private Message module. These settings apply to all users except the default admin user.'),
-      '#group' => 'settings',
-    );
-    $form['privatemsg']['user_relationships_restrict_privatemsg'] = array(
-      '#type'           => 'radios',
-      '#title'          => t('Permitted message recipients'),
-      '#default_value'  => variable_get('user_relationships_restrict_privatemsg', 'all'),
-      '#options' => array(
-        'all' => t('Allow sending messages to all users'),
-        'all_overridable' => t('Allow sending messages to all users, but provide users with an option to only receive messages from their confirmed relationships.'),
-        'relationships' => t('Only allow sending messages between confirmed relationships.'),
-      ),
-    );
-    $form['privatemsg']['user_relationships_privatemsg_autocomplete_alter'] = array(
-      '#type'           => 'checkbox',
-      '#title'          => t('Only suggest confirmed relationships as message recipients'),
-      '#description'    => t('When sending a private message, only display confirmed relationships in the "To" autocomplete field.'),
-      '#default_value'  => variable_get('user_relationships_privatemsg_autocomplete_alter', 0),
-    );
-    $form['privatemsg']['user_relationships_privatemsg_role_exclusions'] = array(
-      '#type' => 'checkboxes',
-      '#options' => user_roles(TRUE),
-      '#default_value' => variable_get('user_relationships_privatemsg_role_exclusions', array()),
-      '#title' => t('Role exceptions'),
-      '#description' => t('Any roles checked below are exempt from the above restrictions and may send private messages to all users.'),
-    );
-  }
   $form['positioning'] = array(
     '#type'   => 'fieldset',
     '#title'  => t('AJAX Popup Positioning'),
