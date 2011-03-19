@@ -69,12 +69,16 @@ function user_relationships_type_load($param = array(), $reset = NULL) {
  * @return
  *   Array of relationship_type objects
  */
-function user_relationships_types_load($reset = NULL) {
-  static $relationship_types_list = array();
+function user_relationships_types_load($reset = FALSE) {
+  static $relationship_types_list = NULL;
 
-  if ($reset || empty($relationship_types_list)) {
+  if ($reset || !isset($relationship_types_list)) {
     // Clear the cached list, since some relationships may have disappeared.
     $relationship_types_list = db_query("SELECT * FROM {user_relationship_types}")->fetchAllAssoc('rtid');
+    if (empty($relationship_types_list)) {
+      // No relationships, avoid querying role permissions.
+      return $relationship_types_list;
+    }
     // Load role permissions for all types.
     $result = db_query('SELECT rtid, rid FROM {user_relationship_type_roles} WHERE rtid IN (:rtids) ORDER BY rtid, rid', array(':rtids' => array_keys($relationship_types_list)));
     foreach ($result as $mapping) {
