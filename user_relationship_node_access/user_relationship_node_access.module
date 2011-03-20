@@ -129,7 +129,7 @@ function user_relationship_node_access_form_node_form_alter(&$form, &$form_state
   // use advanced form with a table if more than one permission, otherwise just a simple 'post to related users' checkbox
   $use_advanced_form = count($author_allowed_perms) > 1;
   // different labels for group posts (that have the group audience fieldset)
-  $is_group_post = module_exists('og') && og_is_group_post_type($form['type']['#value']);
+  $is_group_post = module_exists('og') && og_is_group_content_type('node', $form['#node']->type);
 
   $form['user_relationship_node_access'] = array(
     '#type'         => 'fieldset',
