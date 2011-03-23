@@ -460,202 +460,192 @@ function user_relationships_ui_page_alter(&$page) {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function user_relationships_ui_menu() {
-  include_once(drupal_get_path('module', 'user_relationships_api') .'/user_relationships_api.module');
-
-  $items = array();
-
   $items['admin/config/people/relationships'] = array(
-    'title'             => 'Relationships',
-    'description'       => 'Create relationship types',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer user relationships'),
-    'page callback'     => 'user_relationships_ui_types_list_page',
-    'file'              => 'user_relationships_ui.pages.inc',
+    'title' => 'Relationships',
+    'description' => 'Create relationship types',
+    'access arguments' => array('administer user relationships'),
+    'page callback' => 'user_relationships_ui_types_list_page',
+    'file' => 'user_relationships_ui.pages.inc',
   );
-    $items['admin/config/people/relationships/list'] = array(
-      'title'             => 'List',
-      'type'              => MENU_DEFAULT_LOCAL_TASK,
-      'page callback'     => 'user_relationships_ui_types_list_page',
-      'access callback'   => 'user_access',
-      'access arguments'  => array('administer user relationships'),
-      'file'              => 'user_relationships_ui.pages.inc',
-    );
-    $items['admin/config/people/relationships/add'] = array(
-      'title'             => 'Add type',
-      'type'              => MENU_LOCAL_TASK,
-      'weight'            => 1,
-      'page callback'     => 'drupal_get_form',
-      'page arguments'    => array('user_relationships_ui_type_edit'),
-      'access callback'   => 'user_access',
-      'access arguments'  => array('administer user relationships'),
-      'file'              => 'user_relationships_ui.admin.inc',
-    );
-    $items['admin/config/people/relationships/%user_relationships_type/edit'] = array(
-      'title'             => 'Edit type',
-      'type'              => MENU_CALLBACK,
-      'page callback'     => 'drupal_get_form',
-      'page arguments'    => array('user_relationships_ui_type_edit', 4),
-      'access callback'   => 'user_access',
-      'access arguments'  => array('administer user relationships'),
-      'file'              => 'user_relationships_ui.admin.inc',
-    );
-    $items['admin/config/people/relationships/%user_relationships_type/delete'] = array(
-      'title'             => 'Delete type',
-      'type'              => MENU_CALLBACK,
-      'page callback'     => 'drupal_get_form',
-      'page arguments'    => array('user_relationships_ui_type_delete', 4),
-      'access callback'   => 'user_access',
-      'access arguments'  => array('administer user relationships'),
-      'file'              => 'user_relationships_ui.admin.inc',
-    );
+  $items['admin/config/people/relationships/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'page callback' => 'user_relationships_ui_types_list_page',
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships_ui.pages.inc',
+  );
+  $items['admin/config/people/relationships/add'] = array(
+    'title' => 'Add relationship type',
+    'type' => MENU_LOCAL_ACTION,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_ui_type_edit'),
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships_ui.admin.inc',
+  );
+  $items['admin/config/people/relationships/%user_relationships_type/edit'] = array(
+    'title' => 'Edit type',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_ui_type_edit', 4),
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships_ui.admin.inc',
+    'weight' => 5,
+  );
+  $items['admin/config/people/relationships/%user_relationships_type/delete'] = array(
+    'title' => 'Delete type',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_ui_type_delete', 4),
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships_ui.admin.inc',
+    'weight' => 10,
+  );
   $items['admin/config/people/relationships/settings'] = array(
-    'title'             => 'Settings',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => 2,
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('user_relationships_ui_settings'),
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer user relationships'),
-    'file'              => 'user_relationships_ui.admin.inc',
+    'title' => 'Settings',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_ui_settings'),
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships_ui.admin.inc',
+    'weight' => 20,
   );
 
   $items['relationship_types/autocomplete'] = array(
-    'title'             => 'User Relationships Autocomplete',
-    'type'              => MENU_CALLBACK,
-    'page callback'     => '_user_relationships_ui_autocomplete_types',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer user relationships'),
+    'title' => 'User Relationships Autocomplete',
+    'type' => MENU_CALLBACK,
+    'page callback' => '_user_relationships_ui_autocomplete_types',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer user relationships'),
   );
 
   $items['relationships'] = array(
-    'title'             => 'My relationships',
-    'type'              => MENU_NORMAL_ITEM,
-    'access callback'   => 'user_relationships_ui_check_access',
-    'access arguments'  => array('view'),
-    'page callback'     => 'user_relationships_page',
-    'file'              => 'user_relationships_ui.pages.inc',
-    'menu_name'        => 'user-menu',
+    'title' => 'My relationships',
+    'type' => MENU_NORMAL_ITEM,
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array('view'),
+    'page callback' => 'user_relationships_page',
+    'file' => 'user_relationships_ui.pages.inc',
+    'menu_name' => 'user-menu',
   );
   $items['relationships/list'] = array(
-    'title'             => 'All',
-    'type'              => MENU_DEFAULT_LOCAL_TASK,
-    'weight'            => -10,
-    'access callback'   => 'user_relationships_ui_check_access',
-    'access arguments'  => array('view'),
-    'menu_name'        => 'user-menu',
+    'title' => 'All',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array('view'),
+    'menu_name' => 'user-menu',
   );
   $items['relationships/requests'] = array(
-    'title'             => 'Pending',
-    'access callback'   => 'user_relationships_ui_check_access',
-    'access arguments'  => array('edit'),
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -9,
-    'page callback'     => 'user_relationships_pending_requests_page',
-    'file'              => 'user_relationships_ui.pages.inc',
-    'menu_name'         => 'user-menu',
+    'title' => 'Pending',
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array('edit'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -9,
+    'page callback' => 'user_relationships_pending_requests_page',
+    'file' => 'user_relationships_ui.pages.inc',
+    'menu_name' => 'user-menu',
   );
   foreach (user_relationships_types_load() as $rtid => $relationship) {
     $items["relationships/{$rtid}"] = array(
-      'title'             => $relationship->plural_name ? $relationship->plural_name : $relationship->name,
-      'type'              => MENU_LOCAL_TASK,
-      'access callback'   => 'user_relationships_ui_check_access',
-      'access arguments'  => array('edit'),
-      'page callback'     => 'user_relationships_page',
-      'page arguments'    => array(NULL, 1),
-      'file'              => 'user_relationships_ui.pages.inc',
-      'menu_name'        => 'user-menu',
-
+      'title' => $relationship->plural_name ? $relationship->plural_name : $relationship->name,
+      'type' => MENU_LOCAL_TASK,
+      'access callback' => 'user_relationships_ui_check_access',
+      'access arguments' => array('edit'),
+      'page callback' => 'user_relationships_page',
+      'page arguments' => array(NULL, 1),
+      'file' => 'user_relationships_ui.pages.inc',
+      'menu_name' => 'user-menu',
     );
   }
 
   $items['relationships/%user_relationships/remove'] = array(
-    'title'             => 'Remove relationship',
-    'type'              => MENU_CALLBACK,
-    'access callback'   => 'user_relationships_ui_check_access',
-    'access arguments'  => array('edit'),
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('user_relationships_ui_remove', 1),
-    'file'              => 'user_relationships_ui.forms.inc',
+    'title' => 'Remove relationship',
+    'type' => MENU_CALLBACK,
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array('edit'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_ui_remove', 1),
+    'file' => 'user_relationships_ui.forms.inc',
   );
 
 
   $items['relationship/%user/request'] = array(
-    'title'             => 'Create a relationship',
-    'type'              => MENU_CALLBACK,
-    'access callback'   =>  'user_relationships_ui_check_access',
-    'access arguments'  => array('edit'),
-    'page callback'     => 'user_relationships_ui_request_ajax',
-    'page arguments'    => array(1),
-    'file'              => 'user_relationships_ui.forms.inc',
+    'title' => 'Create a relationship',
+    'type' => MENU_CALLBACK,
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array('edit'),
+    'page callback' => 'user_relationships_ui_request_ajax',
+    'page arguments' => array(1),
+    'file' => 'user_relationships_ui.forms.inc',
   );
 
   $items['user/%user/relationships'] = array(
-    'title'             => 'Relationships',
-    'access callback'   => 'user_relationships_ui_check_access',
-    'access arguments'  => array(array('user'), 1),
-    'page callback'     => 'user_relationships_page',
-    'page arguments'    => array(1),
-    'file'              => 'user_relationships_ui.pages.inc',
-    'menu_name'         => 'user-menu',
-    'type'              => MENU_LOCAL_TASK,
+    'title' => 'Relationships',
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array(array('user'), 1),
+    'page callback' => 'user_relationships_page',
+    'page arguments' => array(1),
+    'file' => 'user_relationships_ui.pages.inc',
+    'menu_name' => 'user-menu',
+    'type' => MENU_LOCAL_TASK,
   );
-    $items['user/%user/relationships/list'] = array(
-      'title'             => 'All',
-      'type'              => MENU_DEFAULT_LOCAL_TASK,
-      'weight'            => -10,
-      'access callback'   => 'user_relationships_ui_check_access',
-      'access arguments'  => array(array('user'), 1),
-      'menu_name'        => 'user-menu',
-    );
-    $items['user/%user/relationships/requests'] = array(
-      'title'             => 'Pending',
-      'type'              => MENU_LOCAL_TASK,
-      'weight'            => -9,
-      'access callback'   => 'user_relationships_ui_check_access',
-      'access arguments'  => array(array('user'), 1),
-      'page callback'     => 'user_relationships_pending_requests_page',
-      'page arguments'    => array(1),
-      'file'              => 'user_relationships_ui.pages.inc',
-      'menu_name'        => 'user-menu',
-    );
+  $items['user/%user/relationships/list'] = array(
+    'title' => 'All',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array(array('user'), 1),
+    'menu_name' => 'user-menu',
+  );
+  $items['user/%user/relationships/requests'] = array(
+    'title' => 'Pending',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -9,
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array(array('user'), 1),
+    'page callback' => 'user_relationships_pending_requests_page',
+    'page arguments' => array(1),
+    'file' => 'user_relationships_ui.pages.inc',
+    'menu_name' => 'user-menu',
+  );
 
-    foreach (user_relationships_types_load() as $rtid => $relationship) {
-      $items["user/%user/relationships/{$rtid}"] = array(
-        'title'             => $relationship->plural_name ? $relationship->plural_name : $relationship->name,
-        'type'              => MENU_LOCAL_TASK,
-        'access callback'   => 'user_relationships_ui_check_access',
-        'access arguments'  => array(array('user'), 1),
-        'page callback'     => 'user_relationships_page',
-        'page arguments'    => array(1, 3),
-        'file'              => 'user_relationships_ui.pages.inc',
-        'menu_name'        => 'user-menu',
-      );
-    }
-
-    foreach (array('approve', 'disapprove', 'cancel') as $action) {
-      $items["user/%user/relationships/requested/%user_relationships/{$action}"] = array(
-        'title'             => 'Approve Relationship',
-        'type'              => MENU_CALLBACK,
-        'access callback'   => 'user_relationships_ui_check_access',
-        'access arguments'  => array(array('user'), 1),
-        'page callback'     => 'user_relationships_ui_pending_requested_ajax',
-        'page arguments'    => array($action, 1, 4),
-        'file'              => 'user_relationships_ui.forms.inc',
-      );
-    }
-
-    $items['user/%user/relationships/%user_relationships/remove'] = array(
-      'title'             => 'Remove relationship',
-      'type'              => MENU_CALLBACK,
-      'access callback'   => 'user_relationships_ui_check_access',
-      'access arguments'  => array(array('edit'), 1),
-      'page callback'     => 'user_relationships_ui_remove_ajax',
-      'page arguments'    => array(1, 3),
-      'file'              => 'user_relationships_ui.forms.inc',
+  foreach (user_relationships_types_load() as $rtid => $relationship) {
+    $items["user/%user/relationships/{$rtid}"] = array(
+      'title' => $relationship->plural_name ? $relationship->plural_name : $relationship->name,
+      'type' => MENU_LOCAL_TASK,
+      'access callback' => 'user_relationships_ui_check_access',
+      'access arguments' => array(array('user'), 1),
+      'page callback' => 'user_relationships_page',
+      'page arguments' => array(1, 3),
+      'file' => 'user_relationships_ui.pages.inc',
+      'menu_name' => 'user-menu',
     );
+  }
+
+  foreach (array('approve', 'disapprove', 'cancel') as $action) {
+    $items["user/%user/relationships/requested/%user_relationships/{$action}"] = array(
+      'title' => 'Approve Relationship',
+      'type' => MENU_CALLBACK,
+      'access callback' => 'user_relationships_ui_check_access',
+      'access arguments' => array(array('user'), 1),
+      'page callback' => 'user_relationships_ui_pending_requested_ajax',
+      'page arguments' => array($action, 1, 4),
+      'file' => 'user_relationships_ui.forms.inc',
+    );
+  }
+
+  $items['user/%user/relationships/%user_relationships/remove'] = array(
+    'title' => 'Remove relationship',
+    'type' => MENU_CALLBACK,
+    'access callback' => 'user_relationships_ui_check_access',
+    'access arguments' => array(array('edit'), 1),
+    'page callback' => 'user_relationships_ui_remove_ajax',
+    'page arguments' => array(1, 3),
+    'file' => 'user_relationships_ui.forms.inc',
+  );
 
   return $items;
 }

@@ -187,12 +187,16 @@ function user_relationships_ui_settings() {
  */
 function user_relationships_ui_type_edit($form, &$form_state, $relationship_type = NULL) {
   if (!$relationship_type) {
+    drupal_set_title(t('Add relationship type'));
     $relationship_type = (object) array(
       'name' => '',
       'plural_name' => '',
       'is_oneway' => FALSE,
       'is_reciprocal' => FALSE,
     );
+  }
+  else {
+    drupal_set_title(t('Edit @name relationship type', array('@name' => $relationship_type->name)));
   }
 
   $form['tabs'] = array(
