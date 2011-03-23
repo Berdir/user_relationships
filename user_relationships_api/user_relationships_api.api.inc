@@ -29,7 +29,7 @@ function user_relationships_type_load($param = array(), $reset = NULL) {
     if (isset($types[$param])) {
       return $types[$param];
     }
-    return NULL;
+    return FALSE;
   }
 
   foreach ($types as $type) {

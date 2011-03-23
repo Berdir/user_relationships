@@ -96,11 +96,11 @@ function user_relationship_defaults_menu() {
   $items = array();
 
   $items['admin/config/people/relationships/defaults/add'] = array(
-    'title'             => 'Add default',
+    'title'             => 'Add default relationship',
     'access arguments'  => array('administer user relationships'),
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('user_relationship_defaults_add_form'),
-    'type'              => MENU_LOCAL_TASK,
+    'type'              => MENU_LOCAL_ACTION,
     'weight'            => 2
   );
   $items['admin/config/people/relationships/defaults/%user_relationship_default/delete'] = array(
