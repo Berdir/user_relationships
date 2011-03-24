@@ -2,7 +2,7 @@
 
 /**
  * @file
- * provides the activity implementation for user_relationships_api module
+ * provides the activity implementation for user_relationships module
  * @todo: Port to D7 once activity.module is available. Maybe move to separate
  *        module.
  */
@@ -10,7 +10,7 @@
 /**
  * Implementation of hook_activity_grants().
  */
-function user_relationships_api_activity_grants($activity) {
+function user_relationships_activity_grants($activity) {
   $relationships = array();
   foreach (user_relationships_types_load() as $type_obj) {
     $relationships["user_relationships_" . $type_obj->rtid] = array($activity->uid);
@@ -21,7 +21,7 @@ function user_relationships_api_activity_grants($activity) {
 /**
  * hook_activity_access_grants().
  */
-function user_relationships_api_activity_access_grants($account, $object = NULL, $type = NULL) {
+function user_relationships_activity_access_grants($account, $object = NULL, $type = NULL) {
   // load up all the users relationships
   $params = array(
     'user' => $account->uid

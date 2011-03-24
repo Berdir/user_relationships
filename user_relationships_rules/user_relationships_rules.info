@@ -2,5 +2,5 @@ name = UR-Rules
 description = "Rules integration for User Relationships."
 package = "User Relationships"
 core = 7.x
-dependencies[] = user_relationships_api
+dependencies[] = user_relationships
 dependencies[] = rules

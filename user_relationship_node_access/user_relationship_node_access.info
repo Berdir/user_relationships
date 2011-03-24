@@ -1,6 +1,6 @@
 name = UR-Node Access
 description = "Provides per node access control based on relationship to author"
-dependencies[] = user_relationships_api
+dependencies[] = user_relationships
 package = "User Relationships"
 core = 7.x
 files[]=user_relationship_node_access.module

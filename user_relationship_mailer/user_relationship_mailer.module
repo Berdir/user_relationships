@@ -21,7 +21,7 @@ function user_relationship_mailer_init() {
  *
  */
 function user_relationship_mailer_send_email($op, $relationship) {
-  //Cron runs may call this and not set $relationship to a valid object. Happens during request expiry in user_relationships_api_cron().
+  //Cron runs may call this and not set $relationship to a valid object. Happens during request expiry in user_relationships_cron().
   if (!isset($relationship->rtid)) {
     return;
   }

@@ -38,7 +38,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
       }
     }
     //check user is allowed to request this type
-    if (!user_relationships_api_can_request($requester, $rtype)) {
+    if (!user_relationships_can_request($requester, $rtype)) {
       $rtype->requester = $requester;
       $rtype->requestee = $requestee;
       form_set_error('rtid', user_relationships_ui_get_message('relationship_type_not_allowed', $rtype));
@@ -51,7 +51,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
     }
 
     //check user is allowed to receive this type
-    if (!user_relationships_api_can_receive($requestee, $rtype)) {
+    if (!user_relationships_can_receive($requestee, $rtype)) {
       $rtype->requester = $requester;
       $rtype->requestee = $requestee;
       form_set_error('rtid', user_relationships_ui_get_message('relationship_type_not_allowed', $rtype));

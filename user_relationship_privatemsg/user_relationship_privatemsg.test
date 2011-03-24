@@ -25,7 +25,7 @@ class UserRelationshipsPrivatemsgRecipientTestCase extends DrupalWebTestCase {
    * Enable required modules.
    */
   function setUp() {
-    return parent::setUp('privatemsg', 'user_relationships_api', 'user_relationships_ui', 'user_relationship_privatemsg');
+    return parent::setUp('privatemsg', 'user_relationships', 'user_relationships_ui', 'user_relationship_privatemsg');
   }
 
   /**

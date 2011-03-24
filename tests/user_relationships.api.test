@@ -5,7 +5,7 @@
  * User Relationships API testcase
  * @author Alex Karshakevich http://drupal.org/user/183217
  */
-class UserRelationshipsApiTestCase extends DrupalWebTestCase {
+class UserRelationshipsTestCase extends DrupalWebTestCase {
   //test users
   var $users = array();
   //test relationship types
@@ -26,7 +26,7 @@ class UserRelationshipsApiTestCase extends DrupalWebTestCase {
    * Enable modules.
    */
   function setUp() {
-    parent::setUp('user_relationships_api');
+    parent::setUp('user_relationships');
     $this->users = array();
     $this->rtypes = array();
     //important, reset cache of rel types between runs
@@ -151,9 +151,9 @@ class UserRelationshipsApiTestCase extends DrupalWebTestCase {
 
     //test approved
     //load pending records
-    $this->assertTrue(user_relationships_api_can_request($u1, $this->rtypes['approval-oneway']));
+    $this->assertTrue(user_relationships_can_request($u1, $this->rtypes['approval-oneway']));
     user_relationships_request_relationship($u1, $u2, $this->rtypes['approval-oneway']->rtid, FALSE);
-    $this->assertTrue(user_relationships_api_can_request($u3, $this->rtypes['approval-oneway']));
+    $this->assertTrue(user_relationships_can_request($u3, $this->rtypes['approval-oneway']));
     user_relationships_request_relationship($u3, $u1, $this->rtypes['approval-oneway']->rtid, FALSE);
 
     $result = user_relationships_load(array('approved' => 1));
@@ -203,10 +203,10 @@ class UserRelationshipsApiTestCase extends DrupalWebTestCase {
     $this->assertEqual(count($result), 3);
 
     //add more pending records
-    $this->assertTrue(user_relationships_api_can_request($u1, $this->rtypes['approval']));
-    $this->assertTrue(user_relationships_api_can_request($u3, $this->rtypes['approval']));
-    $this->assertTrue(user_relationships_api_can_request($u4, $this->rtypes['approval']));
-    $this->assertTrue(user_relationships_api_can_request($u4, $this->rtypes['approval-oneway']));
+    $this->assertTrue(user_relationships_can_request($u1, $this->rtypes['approval']));
+    $this->assertTrue(user_relationships_can_request($u3, $this->rtypes['approval']));
+    $this->assertTrue(user_relationships_can_request($u4, $this->rtypes['approval']));
+    $this->assertTrue(user_relationships_can_request($u4, $this->rtypes['approval-oneway']));
     user_relationships_request_relationship($u4, $u2, $this->rtypes['approval-oneway']->rtid, FALSE);
     user_relationships_request_relationship($u3, $u4, $this->rtypes['approval-oneway']->rtid, FALSE);
     user_relationships_request_relationship($u1, $u2, $this->rtypes['approval']->rtid, FALSE);

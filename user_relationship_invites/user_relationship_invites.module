@@ -69,7 +69,7 @@ function user_relationship_invites_invite($op, $args) {
  * Implementation of hook_user().
 */
 function user_relationship_invites_user($op, &$edit, &$account, $category = NULL) {
-  if (!(module_exists('invite') && module_exists('user_relationships_api'))) {
+  if (!(module_exists('invite') && module_exists('user_relationships'))) {
     return;
   }
 

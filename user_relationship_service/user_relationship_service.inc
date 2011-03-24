@@ -4,8 +4,6 @@
  * @author Written by scottgifford http://drupal.org/user/245699
  * @file Link general user relationship functionalities to services module.
  */
-// Loading the API functions if not already loaded
-module_load_include('inc', 'user_relationships_api', 'user_relationships.api');
 
 
 function user_relationship_service_types($version) {

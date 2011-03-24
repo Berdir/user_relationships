@@ -8,7 +8,7 @@
 /**
  * Implements hook_schema().
  */
-function user_relationships_api_schema() {
+function user_relationships_schema() {
   $schema['user_relationships'] = array(
     'fields' => array(
       'rid'           => array('type' => 'serial', 'not null' => TRUE),
@@ -73,6 +73,6 @@ function user_relationships_api_schema() {
 /**
  * Implements hook_update_last_removed().
  */
-function user_relationships_api_last_removed() {
+function user_relationships_last_removed() {
   return 6103;
 }

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file documents all hooks for user_relationships_api.module
+ * This file documents all hooks for user_relationships.module
  */
 
 /**

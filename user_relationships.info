@@ -1,5 +1,5 @@
-name = UR-API
+name = User Relationships
 description = "API for User Relationships. This only provides the programming interface."
 package = "User Relationships"
 core = 7.x
-files[]=tests/user_relationships_api.api.test
+files[]=tests/user_relationships.api.test

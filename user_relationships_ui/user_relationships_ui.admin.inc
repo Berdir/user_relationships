@@ -137,11 +137,11 @@ function user_relationships_ui_settings() {
       foreach ($rtypes as $rtype) {
         $options[$rtype->rtid] = $rtype->name;
       }
-      $form['author_pane']['user_relationships_api_author_pane_rtids'] = array(
+      $form['author_pane']['user_relationships_author_pane_rtids'] = array(
         '#type' => 'select',
         '#multiple' => TRUE,
         '#title' => t('Relationship types to use'),
-        '#default_value' => variable_get('user_relationships_api_author_pane_rtids', 'absolute'),
+        '#default_value' => variable_get('user_relationships_author_pane_rtids', 'absolute'),
         '#options' => $options,
         '#description' => t('The chosen relationship types will be used for add/remove links.'),
       );

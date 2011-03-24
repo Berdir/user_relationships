@@ -2,10 +2,228 @@
 
 /**
  * @file
- * User Relationships API. Data abstraction layer
+ * User Relationships API. Module shell.
+ *
  * @author Jeff Smick (creator)
  * @author Alex Karshakevich (maintainer) http://drupal.org/user/183217
  */
+
+define('UR_OK', 0x0);
+define('UR_BANNED', 0x1);
+
+/**
+ * Helper function to generate the main and count queries from a list of parameters and options
+ */
+function _user_relationships_generate_query($param = array(), $options = array()) {
+  extract($options, EXTR_SKIP);
+
+  $twoway_reverse_clause = FALSE;//#479486
+  // Turn the conditions into a query.
+  $query = db_select('user_relationships', 'ur');
+  $query->innerJoin('user_relationship_types', 'urt', 'urt.rtid = ur.rtid');
+  foreach ($param as $key => $value) {
+    if (!isset($value)) {
+      continue;
+    }
+
+    switch ($key) {
+    case 'between':
+      $or = db_or()->condition(db_and()
+          ->condition('ur.requester_id', $value[0])
+          ->condition('ur.requestee_id', $value[1])
+      );
+      $and = db_and()
+        ->condition('ur.requestee_id', $value[0])
+        ->condition('ur.requester_id', $value[1]);
+      //#479486 do not include reverse records of two-way relationships by default
+      if (!isset($include_twoway_reverse)) {
+        $and->condition(db_or()
+          ->condition('ur.approved', 1, '<>')
+          ->condition('urt.is_oneway', 0, '<>'));
+        $twoway_reverse_clause = TRUE;
+      }
+      $or->condition($and);
+      $query->condition($or);
+      break;
+
+    case 'user':
+      //#479486 when showing all user's relationships, do not include reverse records of two-way relationships
+      if (!isset($include_twoway_reverse)) {
+        $query->condition(db_or()
+          ->condition('ur.requester_id', $value)
+          ->condition(db_and()
+            ->condition(db_or()
+              ->condition('ur.approved', 1, '<>')
+              ->condition('urt.is_oneway', 0, '<>')
+            )
+            ->condition('ur.requestee_id', $value)
+          )
+        );
+        $twoway_reverse_clause = TRUE;
+      }
+      else {
+        $query->condition(db_or()
+          ->condition('ur.requester_id', $value)
+          ->condition('ur.requestee_id', $value)
+        );
+      }
+      $arguments[] = $value;
+      break;
+
+    case 'requester_id':
+    case 'requestee_id':
+      $twoway_reverse_clause = TRUE;//#479486 these columns automatically should exclude duplicates
+
+    default:
+      $types_cols = array('name', 'plural_name', 'is_oneway', 'is_reciprocal', 'requires_approval', 'expires_val');
+      $prefix = !in_array($key, $types_cols) ? 'ur' : 'urt';
+      $query->condition($prefix . '.' . $key, $value);
+    }
+  }
+
+  //#479486 add a general clause that removed reverse direction from two-way relationship results, unless it's been addressed above
+  if (!$twoway_reverse_clause && !isset($include_twoway_reverse)) {
+    $query->condition(db_or()
+      ->condition('urt.is_oneway', 0, '<>')
+      ->condition('ur.approved', 1, '<>')
+      ->where('ur.requester_id < ur.requestee_id')
+    );
+    $twoway_reverse_clause = TRUE;
+  }
+
+  if (!empty($only_count) || !empty($paging)) {
+    $count = clone $query;
+    $count->addExpression('COUNT(DISTINCT rid)', 'count');
+  }
+  $query
+    ->distinct()
+    ->fields('ur')
+    ->fields('urt');
+
+  if (isset($include_user_info) && $include_user_info) {
+    $query->addField('requesters', 'name', 'requester_name');
+    $query->addField('requesters', 'mail', 'requester_mail');
+    $query->addField('requesters', 'data', 'requester_data');
+    $query->addField('requesters', 'picture', 'requester_picture');
+    $query->addField('requestees', 'name', 'requestee_name');
+    $query->addField('requestees', 'mail', 'requestee_mail');
+    $query->addField('requestees', 'data', 'requestee_data');
+    $query->addField('requestees', 'picture', 'requestee_picture');
+
+    $query->innerJoin('users', 'requesters', 'ur.requester_id = requesters.uid');
+    $query->innerJoin('users', 'requestees', 'ur.requestee_id = requestees.uid');
+  }
+  if (!empty($order)) {
+    if (is_array($order)) {
+      $query->orderBy($order[0], $order[1]);
+    }
+    else {
+      $query->orderBy($order);
+    }
+  }
+  if (!empty($limit)) {
+    $offset = !empty($offset) ? $offset : 0;
+    $query->range($offset, $limit);
+  }
+  if (!empty($only_count)) {
+    return $count;
+  }
+  if (!empty($paging)) {
+    $query = $query
+      ->extend('PagerDefault')
+      ->limit($paging);
+    $query->setCountQuery($count);
+  }
+  return $query;
+}
+
+
+/**
+ * hook_perm()
+ */
+function user_relationships_permission() {
+  return array('can have relationships' => array(
+    'title' => t('Can have relationships'),
+    'description' => t('The user is allowed to have and accept relationships.'),
+  ));
+}
+
+
+/**
+ * hook_cron()
+ */
+function user_relationships_cron() {
+  $now = REQUEST_TIME;
+
+  // only expire relationships once a day
+  $last_cron = variable_get('user_relationships_last_expire', 0);
+  if ($now < $last_cron + 86400) {
+    return FALSE;
+  }
+
+  $result = db_query(
+    " SELECT ur.rid
+      FROM {user_relationships} ur
+        INNER JOIN {user_relationship_types} urt ON ur.rtid = urt.rtid
+      WHERE ur.approved = 0
+        AND urt.expires_val > 0
+        AND ur.updated_at < (:now - (urt.expires_val * 86400))
+      GROUP BY ur.rid", array(':now' => $now)
+  );
+  $expired_requests = $result->fetchCol();
+  if (count($expired_requests)) {
+    db_delete('user_relationships')
+      ->condition('rid', $expired_requests)
+      ->execute();
+    //FIXME: this will trigger various hook_user_relationships() but will not pass a valid relationship object. E.g. in mailer.
+    module_invoke_all('user_relationships_delete', $expired_requests);
+  }
+
+  // remember when we last expired relationships
+  variable_set('user_relationships_last_expire', $now);
+  return TRUE;
+}
+
+
+/**
+ * Implements hook_user_cancel().
+ */
+function user_relationships_user_cancel($edit, $account, $method) {
+    db_delete('user_relationships')
+      ->condition(db_or()
+        ->condition('requester_id', $account->uid)
+        ->condition('requestee_id', $account->uid)
+      )
+      ->execute();
+}
+
+/**
+ * Wrapper function for tt() if i18nstrings enabled.
+ */
+function ur_tt($name, $string, $langcode = NULL, $update = FALSE) {
+  if (module_exists('i18nstrings')) {
+    return tt($name, $string, $langcode, $update);
+  }
+  else {
+    return $string;
+  }
+}
+
+/**
+ * Implements hook_activity_info().
+ */
+function user_relationships_activity_info() {
+  $info = new stdClass();
+  $info->api = 2;
+  $info->name = 'user_relationships';
+  $info->object_type = 'user_relationships';
+  $info->objects = array('Requester' => 'requester', 'Requestee' => 'requestee', 'Relationship' => 'relationship');
+  $info->hooks = array('user_relationships' => array('approve', 'request'));
+  foreach (user_relationships_types_load() as $type_obj) {
+    $info->realms["user_relationships_" . $type_obj->rtid] = $type_obj->plural_name;
+  }
+  return $info;
+}
 
 /**
  * Public API for retrieving a specific relationship
@@ -195,15 +413,15 @@ function user_relationships_request_relationship($requester, $requestee = NULL, 
   }
 
   //check requester is allowed to create this rtype
-  if (!user_relationships_api_can_request($requester, $type)) {
-    watchdog('user_relationships_api', 'User %user has no suitable roles to request a %rtype relationship', array('%user' => format_username($requester), '%rtype' => $type->name), WATCHDOG_WARNING);
+  if (!user_relationships_can_request($requester, $type)) {
+    watchdog('user_relationships', 'User %user has no suitable roles to request a %rtype relationship', array('%user' => format_username($requester), '%rtype' => $type->name), WATCHDOG_WARNING);
     //it would be good to return a reason why save is denied, but it's the API portion, it does not expose anything user-visible
     return FALSE;
   }
 
   //check requestee is allowed to receive this rtype
-  if (!user_relationships_api_can_receive($requestee, $type)) {
-    watchdog('user_relationships_api', 'User %user has no suitable roles to receive a %rtype relationship', array('%user' => format_username($requestee), '%rtype' => $type->name), WATCHDOG_WARNING);
+  if (!user_relationships_can_receive($requestee, $type)) {
+    watchdog('user_relationships', 'User %user has no suitable roles to receive a %rtype relationship', array('%user' => format_username($requestee), '%rtype' => $type->name), WATCHDOG_WARNING);
     //it would be good to return a reason why save is denied, but it's the API portion, it does not expose anything user-visible
     return FALSE;
   }
@@ -403,7 +621,7 @@ function user_relationships_load($param = array(), $options = array(), $reset = 
   $relationships = array();
   foreach ($query->execute() as $relationship) {
     if (isset($include_user_info)) {
-      user_relationships_api_translate_user_info($relationship);
+      user_relationships_translate_user_info($relationship);
     }
 
     if ($sort == 'rid') {
@@ -442,7 +660,7 @@ function user_relationships_load($param = array(), $options = array(), $reset = 
  * @param $relationship
  *    The relationship object with pulled user info
  */
-function user_relationships_api_translate_user_info(&$relationship) {
+function user_relationships_translate_user_info(&$relationship) {
   if ($relationship->requester_name) {
     foreach (array('requester', 'requestee') as $user_type) {
       $relationship->{$user_type} = new stdClass();
@@ -466,7 +684,7 @@ function user_relationships_api_translate_user_info(&$relationship) {
  * @param $relationship_type loaded relationship type object or rtid
  * @return TRUE iff requester is allowed to request this type of relationship
  */
-function user_relationships_api_can_request($requester, $relationship_type) {
+function user_relationships_can_request($requester, $relationship_type) {
   //validate arguments
   if (is_numeric($requester)) {
     $requester = user_load($requester);
@@ -500,7 +718,7 @@ function user_relationships_api_can_request($requester, $relationship_type) {
  * @param $relationship_type loaded relationship type object or rtid
  * @return TRUE iff receiver is allowed to request this type of relationship
  */
-function user_relationships_api_can_receive($requestee, $relationship_type) {
+function user_relationships_can_receive($requestee, $relationship_type) {
   //validate arguments
   if (is_numeric($relationship_type)) {
     $relationship_type = user_relationships_type_load($relationship_type);
