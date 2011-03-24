@@ -591,7 +591,6 @@ function user_relationships_ui_menu() {
     'page callback' => 'user_relationships_page',
     'page arguments' => array(1),
     'file' => 'user_relationships_ui.pages.inc',
-    'menu_name' => 'user-menu',
     'type' => MENU_LOCAL_TASK,
   );
   $items['user/%user/relationships/list'] = array(
@@ -600,7 +599,6 @@ function user_relationships_ui_menu() {
     'weight' => -10,
     'access callback' => 'user_relationships_ui_check_access',
     'access arguments' => array(array('user'), 1),
-    'menu_name' => 'user-menu',
   );
   $items['user/%user/relationships/requests'] = array(
     'title' => 'Pending',
@@ -611,7 +609,6 @@ function user_relationships_ui_menu() {
     'page callback' => 'user_relationships_pending_requests_page',
     'page arguments' => array(1),
     'file' => 'user_relationships_ui.pages.inc',
-    'menu_name' => 'user-menu',
   );
 
   foreach (user_relationships_types_load() as $rtid => $relationship) {
@@ -623,7 +620,6 @@ function user_relationships_ui_menu() {
       'page callback' => 'user_relationships_page',
       'page arguments' => array(1, 3),
       'file' => 'user_relationships_ui.pages.inc',
-      'menu_name' => 'user-menu',
     );
   }
 
