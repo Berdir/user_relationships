@@ -741,3 +741,13 @@ function user_relationships_can_receive($requestee, $relationship_type) {
   }
   return FALSE;
 }
+
+/**
+ * Implementation of hook_locale().
+ */
+function user_relationships_ui_locale($op = 'groups') {
+  switch ($op) {
+    case 'groups':
+      return array('user_relationships' => t('User Relationships'));
+  }
+}

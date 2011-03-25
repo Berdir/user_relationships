@@ -769,16 +769,6 @@ function user_relationships_ui_user_presave(&$edit, $account, $category) {
 }
 
 /**
- * Implementation of hook_locale().
- */
-function user_relationships_ui_locale($op = 'groups') {
-  switch ($op) {
-    case 'groups':
-      return array('user_relationships' => t('User Relationships'));
-  }
-}
-
-/**
  * Implementation of hook_theme().
  */
 function user_relationships_ui_theme() {
