@@ -11,6 +11,59 @@
 define('UR_OK', 0x0);
 define('UR_BANNED', 0x1);
 
+function user_relationships_menu() {
+  $items['admin/config/people/relationships'] = array(
+    'title' => 'Relationships',
+    'description' => 'Create relationship types',
+    'access arguments' => array('administer user relationships'),
+    'page callback' => 'user_relationships_admin_types_list_page',
+    'file' => 'user_relationships.admin.inc',
+  );
+  $items['admin/config/people/relationships/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'page callback' => 'user_relationships_admin_types_list_page',
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships.admin.inc',
+  );
+  $items['admin/config/people/relationships/add'] = array(
+    'title' => 'Add relationship type',
+    'type' => MENU_LOCAL_ACTION,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_admin_type_edit'),
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships.admin.inc',
+  );
+  $items['admin/config/people/relationships/%user_relationships_type/edit'] = array(
+    'title' => 'Edit type',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_admin_type_edit', 4),
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships.admin.inc',
+    'weight' => 5,
+  );
+  $items['admin/config/people/relationships/%user_relationships_type/delete'] = array(
+    'title' => 'Delete type',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_admin_type_delete', 4),
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships.admin.inc',
+    'weight' => 10,
+  );
+  $items['admin/config/people/relationships/settings'] = array(
+    'title' => 'Settings',
+    'type' => MENU_LOCAL_TASK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_relationships_admin_settings'),
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships.admin.inc',
+    'weight' => 20,
+  );
+  return $items;
+}
+
 /**
  * Helper function to generate the main and count queries from a list of parameters and options
  */
@@ -740,4 +793,146 @@ function user_relationships_can_receive($requestee, $relationship_type) {
     }
   }
   return FALSE;
+}
+
+/**
+ * Public API for getting the set or default message
+ *
+ * Use the relationship message system. This is set up to retrieve the admin's set messages or fall back on the default
+ * if those aren't set. It'll automatically replace specific tokens with information from $relationship. If you need to provide
+ * additional tokens, they can be sent through $replacements.
+ *
+ * @param $key
+ *   Message name, see _user_relationships_ui_default_messages() for the
+ *   keys and default messages attached to those keys.
+ * @param $replacements
+ *    Replaceable tokens to append or replace default tokens.
+ *
+ * @return
+ *   Formatted message.
+ */
+function user_relationships_get_message($key, $relationship = NULL, $replacements = array()) {
+  $msg = variable_get("user_relationships_msg_{$key}", NULL);
+
+  if ($relationship) {
+    if (!isset($relationship->requester)) {
+      $relationship->requester = user_load($relationship->requester_id);
+    }
+    if (!isset($relationship->requestee)) {
+      $relationship->requestee = user_load($relationship->requestee_id);
+    }
+    if (!(isset($relationship->name) || isset($relationship->type))) {
+      $relationship->type = user_relationships_type_load($relationship->rtid);
+    }
+
+    $replaceables = array(
+      '!requester'                => theme('username', array('account' => $relationship->requester)),
+      '!requestee'                => theme('username', array('account' => $relationship->requestee)),
+      '%relationship_name'        => isset($relationship->name)
+                                     ? ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name)
+                                     : ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->type->name),
+      '%relationship_plural_name' => isset($relationship->plural_name)
+                                     ? ur_tt("user_relationships:rtid:$relationship->rtid:plural_name", $relationship->plural_name)
+                                     : ur_tt("user_relationships:rtid:$relationship->rtid:plural_name", $relationship->type->plural_name),
+    );
+    $replacements = array_merge($replaceables, $replacements);
+  }
+
+  if (is_null($msg)) {
+    $messages = _user_relationships_default_messages($replacements);
+    $msg      = _user_relationships_get_from_array($key, $messages);
+  }
+  else {
+    $msg = t($msg, $replacements);
+  }
+
+  return $msg;
+}
+
+/**
+ * Returns a nested array of default messages.
+ * When adding any keys, add translations in
+ * _user_relationships_default_message_key_translations().
+ */
+function _user_relationships_default_messages($replacements) {
+  return array(
+    'informational' => array(
+      'submitted'     => t('Your %relationship_name request has been sent to !requestee.', $replacements),
+      'accepted'      => t("!requester's %relationship_name request has been approved.", $replacements),
+      'disapproved'   => t("!requester has declined your %relationship_name request.", $replacements),
+      'disapprove'   => t("!requester's %relationship_name request has been declined.", $replacements),
+      'cancel'        => t('Your %relationship_name request to !requestee has been canceled.', $replacements),
+      'default'       => t('No action has been taken.'),
+      'removed'       => t('The %relationship_name relationship between !requester and !requestee has been deleted.', $replacements),
+      'pending'       => t('!requester has requested to be your %relationship_name.  Please view your !pending_relationship_requests to approve them.', $replacements),
+      'pre_approved'  => t("You are !requestee's newest %relationship_name.", $replacements),
+    ),
+    'error' => array(
+      'too_many_relationships'  => t('You are not permitted to create any more relationships with this user.'),
+      'existing_request'        => t('There is already an earlier %relationship_name request sent to !requestee.', $replacements),
+      'existing_relationship'   => t('There is already an existing %relationship_name relationship with !requestee.', $replacements),
+      'not_accepting_requests'  => t('This user does not accept relationship requests.'),
+      'self_request'            => t('You cannot create a relationship with yourself.'),
+      'non_existent_user'       => t('This user does not exist.'),
+      'non_existent_type'       => t('This relationship type does not exist.'),
+      'unknown_error'           => t('An error has occurred. Please contact the site administrator.'),
+      'relationship_type_not_set' => t('Please choose the type of relationship.'),
+      'relationship_type_not_allowed' => t('You may not create %relationship_name relationships.', $replacements),
+    ),
+  );
+}
+
+/**
+ * Returns translations of message keys, used on the admin settings form. #515338
+ */
+function _user_relationships_default_message_key_translations() {
+  return array(
+    'informational' => t('Informational Messages'),
+    'submitted'     => t('Submitted'),
+    'accepted'      => t('Accepted'),
+    'disapproved'   => t('Declined'),
+    'disapprove'   => t('Decline'),
+    'cancel'        => t('Cancel'),
+    'default'       => t('Default'),
+    'removed'       => t('Removed'),
+    'pending'       => t('Pending'),
+    'pre_approved'  => t('Pre-approved'),
+    'error'         => t('Error Messages'),
+    'too_many_relationships'  => t('Too many relationships'),
+    'existing_request'        => t('Existing request'),
+    'existing_relationship'   => t('Existing relationship'),
+    'not_accepting_requests'  => t('Not accepting requests'),
+    'self_request'            => t('Self request'),
+    'non_existent_user'       => t('Non-existent user'),
+    'non_existent_type'       => t('Non-existent type'),
+    'unknown_error'           => t('Unknown error'),
+    'relationship_type_not_set' => t('Relationship type not set'),
+    'relationship_type_not_allowed' => t('Relationship type not allowed'),
+  );
+}
+
+/**
+ * Recursively search an array for a key and return the value attached to it
+ */
+function _user_relationships_get_from_array($needle, &$haystack) {
+  foreach ($haystack as $key => $value) {
+    if ($key == $needle) {
+      return $value;
+    }
+    elseif (is_array($value)) {
+      if ($msg = _user_relationships_get_from_array($needle, $value)) {
+        return $msg;
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_locale().
+ */
+function user_relationships_ui_locale($op = 'groups') {
+  switch ($op) {
+    case 'groups':
+      return array('user_relationships' => t('User Relationships'));
+  }
 }

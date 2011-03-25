@@ -87,7 +87,7 @@ function user_relationships_ui_request($form, &$form_state, $requestee) {
     $form['error'] = array(
       '#prefix' => '<div>',
       '#suffix' => '</div>',
-      '#markup' => user_relationships_ui_get_message('non_existent_user') . $script
+      '#markup' => user_relationships_get_message('non_existent_user') . $script
     );
     return $form;
   }
@@ -95,7 +95,7 @@ function user_relationships_ui_request($form, &$form_state, $requestee) {
     $form['error'] = array(
       '#prefix' => '<div>',
       '#suffix' => '</div>',
-      '#markup' => user_relationships_ui_get_message('not_accepting_requests') . $script
+      '#markup' => user_relationships_get_message('not_accepting_requests') . $script
     );
     return $form;
   }
@@ -103,7 +103,7 @@ function user_relationships_ui_request($form, &$form_state, $requestee) {
     $form['error'] = array(
       '#prefix' => '<div>',
       '#suffix' => '</div>',
-      '#markup' => user_relationships_ui_get_message('self_request') . $script
+      '#markup' => user_relationships_get_message('self_request') . $script
     );
     return $form;
   }
@@ -112,7 +112,7 @@ function user_relationships_ui_request($form, &$form_state, $requestee) {
     $form['error'] = array(
       '#prefix' => '<div>',
       '#suffix' => '</div>',
-      '#markup' => user_relationships_ui_get_message('too_many_relationships') . $script
+      '#markup' => user_relationships_get_message('too_many_relationships') . $script
     );
     return $form;
   }
@@ -122,7 +122,7 @@ function user_relationships_ui_request($form, &$form_state, $requestee) {
     $data['error'] = array(
       '#prefix' => '<div>',
       '#suffix' => '</div>',
-      '#markup' => user_relationships_ui_get_message('too_many_relationships') . $script
+      '#markup' => user_relationships_get_message('too_many_relationships') . $script
     );
     return $data;
   }

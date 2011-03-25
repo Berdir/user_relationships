@@ -186,7 +186,7 @@ function user_relationship_implications_user_relationships_delete($relationship,
     // the relationship being deleted (current_type) is implied by this relationship (only matters if "strict" is set)
     if (isset($current_type->implied_by[$rtid]) && $current_type->implied_by[$rtid]->strict || isset($reversed[$rtid]) && $reversed[$rtid]->strict) {
       user_relationships_delete_relationship($relationship, $current_type->deleted_by, $reason);
-      drupal_set_message(user_relationships_ui_get_message('removed', $relationship));
+      drupal_set_message(user_relationships_get_message('removed', $relationship));
     }
   }
 }
@@ -253,7 +253,7 @@ function user_relationship_implications_user_relationships_save($relationship, $
             user_relationships_save_relationship($existing, 'request');
             // Set the message informing the user (use requester and requestee
             // from original relationship).
-            drupal_set_message(user_relationships_ui_get_message('accepted', $existing));
+            drupal_set_message(user_relationships_get_message('accepted', $existing));
           }
         }
       }

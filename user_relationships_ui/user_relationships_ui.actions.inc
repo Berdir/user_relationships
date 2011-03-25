@@ -17,7 +17,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
   if (user_access('can have relationships', $requestee)) {
     //check that a type has been chosen
     if (!$rtid || !($rtype = user_relationships_type_load($rtid))) {
-      form_set_error('rtid', user_relationships_ui_get_message('relationship_type_not_set'));
+      form_set_error('rtid', user_relationships_get_message('relationship_type_not_set'));
       //need to handle requests from ajax forms separately
       if (isset($_GET['ajax'])) {
         drupal_goto();
@@ -29,7 +29,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
     $current_relationships = user_relationships_load(array('between' => array($requester->uid, $requestee->uid)), array('sort' => 'rtid'));
     //check for multiple relationships
     if (!variable_get('user_relationships_allow_multiple', TRUE) && count($current_relationships)) {
-    form_set_error('rtid', user_relationships_ui_get_message('too_many_relationships'));
+    form_set_error('rtid', user_relationships_get_message('too_many_relationships'));
       if (isset($_GET['ajax'])) {
         drupal_goto();
       }
@@ -41,7 +41,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
     if (!user_relationships_can_request($requester, $rtype)) {
       $rtype->requester = $requester;
       $rtype->requestee = $requestee;
-      form_set_error('rtid', user_relationships_ui_get_message('relationship_type_not_allowed', $rtype));
+      form_set_error('rtid', user_relationships_get_message('relationship_type_not_allowed', $rtype));
       if (isset($_GET['ajax'])) {
         drupal_goto();
       }
@@ -54,7 +54,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
     if (!user_relationships_can_receive($requestee, $rtype)) {
       $rtype->requester = $requester;
       $rtype->requestee = $requestee;
-      form_set_error('rtid', user_relationships_ui_get_message('relationship_type_not_allowed', $rtype));
+      form_set_error('rtid', user_relationships_get_message('relationship_type_not_allowed', $rtype));
       if (isset($_GET['ajax'])) {
         drupal_goto();
       }
@@ -91,13 +91,13 @@ function user_relationships_ui_request_validate($form, &$form_state) {
       $select->condition('rtid', $test_relationships, 'NOT IN');
     }
     if (!$select->execute()->fetchField()) {
-      drupal_set_message(user_relationships_ui_get_message('too_many_relationships'), 'error');
+      drupal_set_message(user_relationships_get_message('too_many_relationships'), 'error');
       drupal_goto();
     }
     //check if desided relationship type is among the unused ones
     elseif (isset($test_relationships[$rtid])) {
       $message_name = $test_relationships[$rtid]->approved ? 'existing_relationship' : 'existing_request';
-      form_set_error('rtid', user_relationships_ui_get_message($message_name, NULL, array(
+      form_set_error('rtid', user_relationships_get_message($message_name, NULL, array(
         '!requester'                => theme('username', array('account' => $requester)),
         '!requestee'                => theme('username', array('account' => $requestee)),
         '%relationship_name'        => $current_relationships[$rtid][0]->name,
@@ -106,7 +106,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
     }
   }
   else {
-    drupal_set_message(user_relationships_ui_get_message('not_accepting_requests'));
+    drupal_set_message(user_relationships_get_message('not_accepting_requests'));
     drupal_goto();
   }
 }
@@ -124,7 +124,7 @@ function user_relationships_ui_request_submit($form, &$form_state) {
   $relationship = user_relationships_request_relationship($relationship);
 
   if ($relationship === FALSE) {
-    drupal_set_message(user_relationships_ui_get_message('unknown_error', $relationship));
+    drupal_set_message(user_relationships_get_message('unknown_error', $relationship));
   }
 
   //Not sure why these were here, they just cause php notices
@@ -132,7 +132,7 @@ function user_relationships_ui_request_submit($form, &$form_state) {
 //  $relationship->requestee = $requestee;
 //  $relationship->type = $relationship_type;
 
-  drupal_set_message(user_relationships_ui_get_message(($relationship->approved ? 'pre_approved' : 'submitted'), $relationship));
+  drupal_set_message(user_relationships_get_message(($relationship->approved ? 'pre_approved' : 'submitted'), $relationship));
 }
 
 
@@ -155,7 +155,7 @@ function user_relationships_ui_pending_requested_submit($form, &$form_state) {
     }
     $relationship->approved = TRUE;
     user_relationships_save_relationship($relationship, $form_state['values']['action']);
-    drupal_set_message(user_relationships_ui_get_message('accepted', $relationship));
+    drupal_set_message(user_relationships_get_message('accepted', $relationship));
     break;
 
   case 'cancel':
@@ -164,7 +164,7 @@ function user_relationships_ui_pending_requested_submit($form, &$form_state) {
       exit();
     }
     user_relationships_delete_relationship($relationship, $user, $form_state['values']['action']);
-    drupal_set_message(user_relationships_ui_get_message($form_state['values']['action'], $relationship));
+    drupal_set_message(user_relationships_get_message($form_state['values']['action'], $relationship));
     break;
 
   case 'disapprove':
@@ -173,11 +173,11 @@ function user_relationships_ui_pending_requested_submit($form, &$form_state) {
       exit();
     }
     user_relationships_delete_relationship($relationship, $user, $form_state['values']['action']);
-    drupal_set_message(user_relationships_ui_get_message($form_state['values']['action'], $relationship));
+    drupal_set_message(user_relationships_get_message($form_state['values']['action'], $relationship));
     break;
 
   default:
-    drupal_set_message(user_relationships_ui_get_message('default'));
+    drupal_set_message(user_relationships_get_message('default'));
   }
 
   $form_state['redirect'] = str_replace('destination=', '', drupal_get_destination());
@@ -198,7 +198,7 @@ function user_relationships_ui_remove_submit($form, &$form_state) {
   }
 
   user_relationships_delete_relationship($relationship, $user);
-  drupal_set_message(user_relationships_ui_get_message('removed', $relationship));
+  drupal_set_message(user_relationships_get_message('removed', $relationship));
 
   return "user/{$form_state['values']['viewed_id']}/relationships";
 }

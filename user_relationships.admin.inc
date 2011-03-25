@@ -4,13 +4,11 @@
  * @file
  * User Relationships admin settings and config forms
  */
-module_load_include('inc', 'user_relationships_ui', 'user_relationships_ui.admin_actions');
 
 /**
  * Main settings
  */
-function user_relationships_ui_settings() {
-
+function user_relationships_admin_settings() {
   $form['settings'] = array(
     '#type' => 'vertical_tabs',
   );
@@ -113,8 +111,8 @@ function user_relationships_ui_settings() {
     '#type' => 'vertical_tabs',
   );
 
-  $default_messages = _user_relationships_ui_default_messages(array());
-  _user_relationships_ui_message_settings_form($form['messages'], $default_messages);
+  $default_messages = _user_relationships_default_messages(array());
+  _user_relationships_message_settings_form($form['messages'], $default_messages);
 
   //options for author pane integration
   if (function_exists('author_pane_api') && author_pane_api() == '2') {
@@ -154,7 +152,7 @@ function user_relationships_ui_settings() {
 /**
  * Relationship type edit page.
  */
-function user_relationships_ui_type_edit($form, &$form_state, $relationship_type = NULL) {
+function user_relationships_admin_type_edit($form, &$form_state, $relationship_type = NULL) {
   if (!$relationship_type) {
     drupal_set_title(t('Add relationship type'));
     $relationship_type = (object) array(
@@ -270,7 +268,7 @@ function user_relationships_ui_type_edit($form, &$form_state, $relationship_type
 /**
  * Relationship type delete page.
  */
-function user_relationships_ui_type_delete($form, &$form_state, $relationship_type = NULL) {
+function user_relationships_admin_type_delete($form, &$form_state, $relationship_type = NULL) {
   if ($relationship_type) {
     $form['rtid'] = array(
       '#type'   => 'value',
@@ -286,7 +284,258 @@ function user_relationships_ui_type_delete($form, &$form_state, $relationship_ty
     );
   }
   else {
-    drupal_set_message(user_relationships_ui_get_message('non_existent_type'));
+    drupal_set_message(user_relationships_get_message('non_existent_type'));
     drupal_goto('admin/config/people/relationships');
+  }
+}
+
+/**
+ * Validate the submitted relationship type
+ */
+function user_relationships_admin_type_edit_validate($form, &$form_state) {
+  $select = db_select('user_relationship_types', 'urt')
+    ->fields('urt', array('name'))
+    ->where("LOWER(name) = LOWER(:name)", array(':name' => $form_state['values']['name']));
+  if (isset($form_state['values']['rtid'])) {
+    $select->condition('rtid', $form_state['values']['rtid'], '<>');
+  }
+  if ($select->execute()->fetchField()) {
+    form_set_error('name', t('%name has already been used.', array('%name' => $form_state['values']['name'])));
+  }
+
+  $expire = $form_state['values']['expires_val'];
+  if (!is_numeric($expire) || (int)$expire < 0) {
+    form_set_error('expires_val', t('Expiration period must be an integer greater than or equal to 0.'));
+  }
+}
+
+/***
+ * Generic settings validation.
+ */
+function user_relationships_setting_validation($element, $validations) {
+  foreach ($validations as $validation => $info) {
+    $arguments = array($element['#value']);
+    if (isset($info['valid_options'])) {
+      $arguments[] = $info['valid_options'];
+    }
+
+    $valid = function_exists($validation) && call_user_func_array($validation, $arguments);
+    $valid = !$valid ? ($validation == 'is_positive' && is_numeric($arguments) && (int)$arguments > 0) : FALSE;
+    $valid = !$valid ? ($validation == 'is_non_negative' && is_numeric($arguments) && (int)$arguments > -1) : FALSE;
+
+    if (!$valid) {
+      form_set_error($element['#name'], $info['msg']);
+    }
+  }
+}
+
+/**
+ * Process the relationship edit page form submission.
+ */
+function user_relationships_admin_type_edit_submit($form, &$form_state) {
+  $relationship_type = (object)$form_state['values'];
+  if ($form_state['values']['action'] == 'add') {
+    //#348025 when editing a type, make sure that two-way relationships are not left as reciprocal, just in case, as the UI allows it.
+    if (!$relationship_type->is_oneway) {
+      $relationship_type->is_reciprocal = 0;
+    }
+    drupal_write_record('user_relationship_types', $relationship_type);
+
+    // Update strings for translation
+    _user_relationships_update_translations($relationship_type);
+
+    $form_state['values']['rtid'] = $relationship_type->rtid;
+    module_invoke_all('user_relationships_type_insert', $relationship_type);
+
+    drupal_set_message(t('Relationship %name has been added.', array('%name' => $relationship_type->name)));
+    watchdog(
+      'u_relationship',
+      'User Relationships form: relationship %name added.', array('%name' => $relationship_type->name),
+      WATCHDOG_NOTICE,
+      l(t('view'), 'admin/user/user_relationship/types/'. $relationship_type->rtid .'/edit')
+    );
+  }
+  else {
+    //#348025 when editing a type, make sure that two-way relationships are not left as reciprocal, just in case, as the UI allows it.
+    if (!$relationship_type->is_oneway) {
+      $relationship_type->is_reciprocal = 0;
+    }
+    drupal_write_record('user_relationship_types', $relationship_type, 'rtid');
+
+    // Update strings for translation
+    _user_relationships_update_translations($relationship_type);
+    module_invoke_all('user_relationships_type_update', $relationship_type);
+
+    drupal_set_message(t('Relationship %name has been updated.', array('%name' => $relationship_type->name)));
+    watchdog(
+      'u_relationship',
+      'User Relationships form: relationship %name updated.', array('%name' => $relationship_type->name),
+      WATCHDOG_NOTICE,
+      l(t('view'), 'admin/config/people/relationships/'. $relationship_type->rtid .'/edit')
+    );
+  }
+
+  //save role permissions for this rtype
+  db_delete('user_relationship_type_roles')
+    ->condition('rtid', $relationship_type->rtid)
+    ->execute();
+  if ($form_state['values']['roles']) {
+    $role_record = new StdClass;
+    $role_record->rtid = $relationship_type->rtid;
+    foreach ($form_state['values']['roles'] as $rid => $selected) {
+      if ($rid == $selected) {
+        $role_record->rid = $selected;
+        drupal_write_record('user_relationship_type_roles', $role_record);
+      }
+    }
+  }
+
+  //save role receive permissions for this rtype
+  db_delete('user_relationship_type_roles_receive')
+    ->condition('rtid', $relationship_type->rtid)
+    ->execute();
+  if ($form_state['values']['roles_receive']) {
+    $role_receive_record = new StdClass;
+    $role_receive_record->rtid = $relationship_type->rtid;
+    foreach ($form_state['values']['roles_receive'] as $rid => $selected) {
+      if ($rid == $selected) {
+        $role_receive_record->rid = $selected;
+        drupal_write_record('user_relationship_type_roles_receive', $role_receive_record);
+      }
+    }
+  }
+
+  user_relationships_types_load(TRUE);
+  menu_rebuild();
+
+  $form_state['redirect'] = 'admin/config/people/relationships';
+}
+
+
+/**
+ * Process relationship delete form submission.
+ */
+function user_relationships_admin_type_delete_submit($form, &$form_state) {
+  $relationship_type = user_relationships_type_load($form_state['values']['rtid']);
+
+  db_delete('user_relationship_type_roles')
+    ->condition('rtid', $relationship_type->rtid)
+    ->execute();
+  db_delete('user_relationships')
+    ->condition('rtid', $relationship_type->rtid)
+    ->execute();
+  db_delete('user_relationship_types')
+    ->condition('rtid', $relationship_type->rtid)
+    ->execute();
+
+  module_invoke_all('user_relationships_type_delete', $relationship_type);
+
+  // #371311 force menu rebuild
+  user_relationships_types_load(TRUE);
+  menu_rebuild();
+
+  drupal_set_message(t('Relationship %name has been deleted.', array('%name' => $relationship_type->name)));
+  watchdog(
+    'u_relationship',
+    'User Relationships form: relationship %name deleted.', array('%name' => $relationship_type->name),
+    WATCHDOG_NOTICE
+  );
+
+  $form_state['redirect'] = 'admin/config/people/relationships';
+}
+
+/**
+ * Make relationship type available to translation by i18nstrings.module
+ */
+function _user_relationships_update_translations(&$relationship_type) {
+  if (function_exists('i18nstrings_update') && $relationship_type->rtid) {
+    i18nstrings_update("user_relationships:rtid:$relationship_type->rtid:name", $relationship_type->name);
+    i18nstrings_update("user_relationships:rtid:$relationship_type->rtid:plural_name", $relationship_type->plural_name);
+  }
+}
+
+
+/**
+ * Relationship Types List
+ */
+function user_relationships_admin_types_list_page() {
+  $relationship_types = user_relationships_types_load();
+
+  $table['headers'] = array(t('Name'), t('Plural'), t('Type'), t('Requires Approval'), t('Expiration'), t('Operations'));
+  $table['data'] = array();
+  $table['rows'] = array();
+
+  foreach ($relationship_types as $relationship) {
+    $table['data'][] = $relationship;
+    $table['rows'][] = array(
+      $relationship->name,
+      $relationship->plural_name,
+      ($relationship->is_oneway ? ($relationship->is_reciprocal ? t('reciprocal') : t('one way')) : t('mutual')),
+      ($relationship->requires_approval ? t('yes') : t('no')),
+      ($relationship->expires_val ? t('@expires_val', array('@expires_val' => format_plural($relationship->expires_val, '1 day', '@count days'))) : t('Never')),
+      l(t('edit'),    "admin/config/people/relationships/{$relationship->rtid}/edit") .' | '.
+      l(t('delete'),  "admin/config/people/relationships/{$relationship->rtid}/delete")
+    );
+  }
+
+  foreach (module_implements('user_relationships_page_alter') as $module) {
+    $function = "{$module}_user_relationships_page_alter";
+    $function('types list', $page, $table);
+  }
+
+  if (!sizeof($table['rows'])) {
+    $table['rows'][] = array(array('data' => t('No relationships available.'), 'colspan' => sizeof($table['headers'])));
+  }
+
+  $page['relationships'] = array(
+    '#type'   => 'fieldset',
+    '#title'  => t('Relationship Types'),
+    '#weight' => 0,
+    // No automatic fieldset processing to avoid fatal error. Maybe a core bug?
+    '#pre_render' => array(),
+    // Avoid notice/error in seven theme.
+    '#attributes' => array(),
+  );
+  $page['relationships']['list'] = array(
+    '#markup' => theme('table', array('header' => $table['headers'], 'rows' => $table['rows']))
+  );
+
+  return drupal_render($page);
+}
+
+
+/**
+ * Helper function to build the settings form for the notification messages
+ */
+function _user_relationships_message_settings_form(&$form, $defaults = array()) {
+
+  $replaceables = array(
+    '!requester',
+    '!requestee',
+    '%relationship_name',
+    '%relationship_plural_name',
+    '!pending_relationship_requests',
+  );
+
+  $translations = _user_relationships_default_message_key_translations();
+  foreach ($defaults as $key => $value) {
+    if (is_array($value)) {
+      $form[$key] = array(
+        '#type'         => 'fieldset',
+        '#title'        => isset($translations[$key]) ? $translations[$key] : t(ucfirst(str_replace('_', ' ', $key))),
+        '#collapsible'  => TRUE,
+        '#collapsed'    => TRUE,
+        '#description'  => t('The following tokens are available for use in your custom messages: @replaceables.', array('@replaceables' => implode($replaceables, ', '))),
+        '#group'        => 'messages_settings',
+      );
+      _user_relationships_message_settings_form($form[$key], $value);
+    }
+    else {
+      $form["user_relationships_msg_{$key}"] = array(
+        '#type'           => 'textfield',
+        '#title'          => isset($translations[$key]) ? $translations[$key] : t(ucfirst(str_replace('_', ' ', $key))),
+        '#default_value'  => variable_get("user_relationships_msg_{$key}", $value)
+      );
+    }
   }
 }
