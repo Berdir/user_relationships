@@ -16,7 +16,7 @@
  * 
  */
 function hook_user_relationship_blocks_get_uid($delta) {
-  if (arg(0) = 'mypath') {
+  if (arg(0) == 'mypath') {
     return arg(1);
   }
 }
