@@ -209,6 +209,11 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     '#default_value'  => isset($relationship_type->expires_val) ? $relationship_type->expires_val : 0,
     '#description'    => t('After how many days should a request of this type be removed? (0 for never)'),
     '#weight'         => -7,
+    '#states'         => array(
+      'visible'         => array(
+        ':input[name=requires_approval]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['general']['is_oneway'] = array(
     '#type'           => 'checkbox',
@@ -223,6 +228,11 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     '#default_value'  => isset($relationship_type) ? $relationship_type->is_reciprocal : NULL,
     '#description'    => t('Check if this one-way relationship can go either way'),
     '#weight'         => -5,
+    '#states'         => array(
+      'visible'         => array(
+        ':input[name=is_oneway]' => array('checked' => TRUE),
+      ),
+    ),
   );
 
   $form['roles'] = array(
