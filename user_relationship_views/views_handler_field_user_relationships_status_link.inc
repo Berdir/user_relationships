@@ -24,7 +24,7 @@ class views_handler_field_user_relationships_status_link extends views_handler_f
     global $user;
 
     //Do not show to guests or users witout permission to have relationships.
-    if (!$user->uid && user_access('can have relationships')) {
+    if (!$user->uid) {
       return;
     }
 

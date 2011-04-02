@@ -53,14 +53,22 @@ function _user_relationships_ui_autocomplete_types($string = '') {
 }
 
 /**
- * List of possible relationship actions with between two users
- * @param $viewer - user object for the visitor
- * @param $viewed - user object for the user being looked at
- * @param action_types - associative array of kinds of links to show (all by default). Only the existence of specific array keys is needed:
- *                       add, remove, requested, received
+ * List of possible relationship actions with between two users.
+ *
+ * @param $viewer
+ *   User object for the visitor.
+ * @param $viewed
+ *   User object for the user being looked at.
+ * @param action_types
+ *   Associative array of kinds of links to show (all by default).
+ *   Only the existence of specific array keys is needed: add, remove,
+ *   requested, received.
+ *
+ * @return
+ *   An array with actions as strings.
  */
-function _user_relationships_ui_actions_between(&$viewer, &$viewed, $action_types = array('add' => 1, 'remove' => 1, 'requested' => 1, 'received' => 1)) {
-  if (!user_access('can have relationships') || $viewer->uid == $viewed->uid) {
+function _user_relationships_ui_actions_between($viewer, $viewed, $action_types = array('add' => 1, 'remove' => 1, 'requested' => 1, 'received' => 1)) {
+  if ($viewer->uid == $viewed->uid) {
     return;
   }
 
@@ -87,38 +95,18 @@ function _user_relationships_ui_actions_between(&$viewer, &$viewed, $action_type
   }
 
   if (isset($action_types['add'])) {
-    // Compute if any more relationships can be created
-    $types_count = (int)db_query("SELECT COUNT(*) FROM {user_relationship_types}")->fetchField();
-    $existing_relationships = user_relationships_load(array('between' => array($viewer->uid, $viewed->uid)), array('sort' => 'rtid'));
-    $all_relationships = user_relationships_types_load();
-    $relationships_count = 0;
-
-    // Unset the relationships which already exist
-    foreach ($existing_relationships as $rtid => $relationship_type) {
-      foreach ($relationship_type as $relationship) {
-        if (!$relationship->is_oneway || !$relationship->is_reciprocal || $relationship->requester_id == $viewer->uid) {
-          unset($all_relationships[$rtid]);
-          $relationships_count++;
-        }
-      }
-    }
-
-    if (!$relationships_count || (variable_get('user_relationships_allow_multiple', TRUE) && ($relationships_count < $types_count))) {
-      //if configured, create direct links
+    $relationships = user_relationships_ui_get_requestable_rtypes($viewer, $viewed, 'full');
+    if ($relationships) {
+      // If configured, create direct links.
       if (variable_get('user_relationships_show_direct_links', 1)) {
-        //draw a single link, or one for each relationship type
-        foreach ($all_relationships as $rtid => $relationship) {
-          //check this type can be requested
-          if (!user_relationships_can_request($viewer, $relationship) || !user_relationships_can_receive($viewed, $relationship) || !user_access('maintain own relationships')) {
-            continue;
-          }
+        // Create a single link, or one for each relationship type.
+        foreach ($relationships as $rtid => $relationship) {
           $list[] = theme('user_relationships_request_relationship_direct_link', array('relate_to' => $viewed, 'relationship_type' => $relationship));
         }
       }
-      //just one generic link pointing to a page with dropdown
+      // just one generic link pointing to a page with dropdown.
       else {
         $list[] = theme('user_relationships_request_relationship_link', array('relate_to' => $viewed));
-
       }
     }
   }
@@ -139,36 +127,57 @@ function _user_relationships_ui_actions_between(&$viewer, &$viewed, $action_type
 }
 
 /**
- * Get relationship types that a user can request
- * TODO: factor out of .module into an include file
- * @param $requester requester user or uid
- * @param $requestee requestee user or uid
- * @return array {rtid} => {relationship type name} that requester may send to requestee
+ * Get relationship types that a user can request from another user.
+ *
+ * @param $requester
+ *   Requesting user object.
+ * @param $requestee
+ *   The reqestee user object.
+ * @param $return
+ *   What should be returned, either name for the translated relationship name
+ *   or full for the whole object. Defaults to name.
+ *
+ * @return
+ *   An array of relationship types a user can request from another, keyed by
+ *   the relationship type id and either the name or full object as value,
+ *   depending on the return argument.
  */
-function _user_relationships_ui_get_requestable_rtypes($requester, $requestee) {
+function user_relationships_ui_get_requestable_rtypes($requester, $requestee, $return = 'name') {
   $current_relationships = user_relationships_load(array('between' => array($requester->uid, $requestee->uid)), array('sort' => 'rtid'));
 
   $relationship_types = user_relationships_types_load();
   $relationships = array();
   foreach ($relationship_types as $rtype) {
-    //exclude already established relationships
-    if (!isset($current_relationships[$rtype->rtid])) {
-      $relationships[$rtype->rtid] = ur_tt("user_relationships:rtid:$rtype->rtid:name", $rtype->name);
-      continue;
-    }
-    $relationship = $current_relationships[$rtype->rtid];
-    if (is_array($relationship) && count($relationship)) {
-      $relationship = $relationship[0];
-    }
-    //skip two-way relationships, one-way non-reciprocal relationships, or reciprocal where this direction already exists
-    if (isset($current_relationships[$rtype->rtid]) && (!$rtype->is_oneway || !$rtype->is_reciprocal || (isset($relationship) && $relationship->requester_id == $requester->uid))) {
-      continue;
-    }
-    //exclude types that are not allowed
+
+    // Exclude types that are not allowed.
     if (!user_relationships_can_request($requester, $rtype) || !user_relationships_can_receive($requestee, $rtype)) {
       continue;
     }
-    $relationships[$rtype->rtid] = ur_tt("user_relationships:rtid:$rtype->rtid:name", $rtype->name);
+
+    // If there is a relationship o that type already, make further checks.
+    if (isset($current_relationships[$rtype->rtid])) {
+      $relationship = $current_relationships[$rtype->rtid];
+      if (is_array($relationship) && count($relationship)) {
+        $relationship = $relationship[0];
+      }
+
+      // Skip two-way relationships, one-way non-reciprocal relationships, or
+      // reciprocal where this direction already exists.
+      if (isset($current_relationships[$rtype->rtid]) && (!$rtype->is_oneway || !$rtype->is_reciprocal || (isset($relationship) && $relationship->requester_id == $requester->uid))) {
+        // If users can't have multiple relationships, we're done here.
+        // Return an empty array.
+        if (!variable_get('user_relationships_allow_multiple', TRUE)) {
+          return array();
+        }
+        continue;
+      }
+    }
+    if ($return == 'name') {
+      $relationships[$rtype->rtid] = ur_tt("user_relationships:rtid:$rtype->rtid:name", $rtype->name);
+    }
+    else {
+      $relationships[$rtype->rtid] = $rtype;
+    }
   }
   return $relationships;
 }
@@ -188,12 +197,13 @@ function user_relationships_ui_check_access($types, $account = NULL) {
     return TRUE;
   }
 
-  if (!is_array($types)) {
-    $types = array($types);
+  // If the user does not any have permission, deny access.
+  if (!user_relationships_can_receive($account)) {
+    return FALSE;
   }
 
-  if (!user_access('can have relationships')) {
-    return FALSE;
+  if (!is_array($types)) {
+    $types = array($types);
   }
 
   foreach ($types as $type) {

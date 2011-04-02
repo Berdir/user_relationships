@@ -13,101 +13,86 @@ function user_relationships_ui_request_validate($form, &$form_state) {
   $requester = user_load($form_state['values']['requester']);
   $requestee = user_load($form_state['values']['requestee']);
   $rtid = $form_state['values']['rtid'];
+  $rtype = user_relationships_type_load($rtid);
 
-  if (user_access('can have relationships', $requestee)) {
-    //check that a type has been chosen
-    if (!$rtid || !($rtype = user_relationships_type_load($rtid))) {
-      form_set_error('rtid', user_relationships_get_message('relationship_type_not_set'));
-      //need to handle requests from ajax forms separately
-      if (isset($_GET['ajax'])) {
-        drupal_goto();
-      }
-      else {
-        return;
-      }
-    }
-    $current_relationships = user_relationships_load(array('between' => array($requester->uid, $requestee->uid)), array('sort' => 'rtid'));
-    //check for multiple relationships
-    if (!variable_get('user_relationships_allow_multiple', TRUE) && count($current_relationships)) {
-    form_set_error('rtid', user_relationships_get_message('too_many_relationships'));
-      if (isset($_GET['ajax'])) {
-        drupal_goto();
-      }
-      else {
-        return;
-      }
-    }
-    //check user is allowed to request this type
-    if (!user_relationships_can_request($requester, $rtype)) {
-      $rtype->requester = $requester;
-      $rtype->requestee = $requestee;
-      form_set_error('rtid', user_relationships_get_message('relationship_type_not_allowed', $rtype));
-      if (isset($_GET['ajax'])) {
-        drupal_goto();
-      }
-      else {
-        return;
-      }
-    }
-
-    //check user is allowed to receive this type
-    if (!user_relationships_can_receive($requestee, $rtype)) {
-      $rtype->requester = $requester;
-      $rtype->requestee = $requestee;
-      form_set_error('rtid', user_relationships_get_message('relationship_type_not_allowed', $rtype));
-      if (isset($_GET['ajax'])) {
-        drupal_goto();
-      }
-      else {
-        return;
-      }
-    }
-
-    //check if this request contradicts existing relationships or requests of this type
-    //gather rtid's of relationships that have already been requested from requester to requestee
-    $test_relationships = array();
-    foreach ($current_relationships as $key => $value) {
-      foreach ($value as $val_rel) {
-        //existing two way relationships count no matter the direction
-        if (!$val_rel->is_oneway) {
-          $test_relationships[$key]=$key;
-          continue;
-        }
-        //if it's one way, but not reciprocal, then it counts no matter the direction
-        if (!$val_rel->is_reciprocal) {
-          $test_relationships[$key]=$key;
-          continue;
-        }
-        //remaining case is a reciprocal relationship - it counts unless the request is in the opposite direction
-        if ($requester->uid == $val_rel->requester_id) {
-          $test_relationships[$key]=$key;
-        }
-      }
-    }
-    //check if there aren't any available (not yet used) types that can be established
-    $select = db_select('user_relationship_types');
-    $select->addExpression('COUNT(*)', 'count');
-    if ($test_relationships) {
-      $select->condition('rtid', $test_relationships, 'NOT IN');
-    }
-    if (!$select->execute()->fetchField()) {
-      drupal_set_message(user_relationships_get_message('too_many_relationships'), 'error');
+  //check that a type has been chosen
+  $current_relationships = user_relationships_load(array('between' => array($requester->uid, $requestee->uid)), array('sort' => 'rtid'));
+  //check for multiple relationships
+  if (!variable_get('user_relationships_allow_multiple', TRUE) && count($current_relationships)) {
+  form_set_error('rtid', user_relationships_get_message('too_many_relationships'));
+    if (isset($_GET['ajax'])) {
       drupal_goto();
     }
-    //check if desided relationship type is among the unused ones
-    elseif (isset($test_relationships[$rtid])) {
-      $message_name = $test_relationships[$rtid]->approved ? 'existing_relationship' : 'existing_request';
-      form_set_error('rtid', user_relationships_get_message($message_name, NULL, array(
-        '!requester'                => theme('username', array('account' => $requester)),
-        '!requestee'                => theme('username', array('account' => $requestee)),
-        '%relationship_name'        => $current_relationships[$rtid][0]->name,
-        '%relationship_plural_name' => $current_relationships[$rtid][0]->plural_name
-      )));
+    else {
+      return;
     }
   }
-  else {
-    drupal_set_message(user_relationships_get_message('not_accepting_requests'));
+  //check user is allowed to request this type
+  if (!user_relationships_can_request($requester, $rtype)) {
+    $rtype->requester = $requester;
+    $rtype->requestee = $requestee;
+    form_set_error('rtid', user_relationships_get_message('relationship_type_not_allowed', $rtype));
+    if (isset($_GET['ajax'])) {
+      drupal_goto();
+    }
+    else {
+      return;
+    }
+  }
+
+  //check user is allowed to receive this type
+  if (!user_relationships_can_receive($requestee, $rtype)) {
+    $rtype->requester = $requester;
+    $rtype->requestee = $requestee;
+    form_set_error('rtid', user_relationships_get_message('relationship_type_not_allowed', $rtype));
+    if (isset($_GET['ajax'])) {
+      drupal_goto();
+    }
+    else {
+      return;
+    }
+  }
+
+  //check if this request contradicts existing relationships or requests of this type
+  //gather rtid's of relationships that have already been requested from requester to requestee
+  $test_relationships = array();
+  foreach ($current_relationships as $key => $value) {
+    foreach ($value as $val_rel) {
+      //existing two way relationships count no matter the direction
+      if (!$val_rel->is_oneway) {
+        $test_relationships[$key]=$key;
+        continue;
+      }
+      //if it's one way, but not reciprocal, then it counts no matter the direction
+      if (!$val_rel->is_reciprocal) {
+        $test_relationships[$key]=$key;
+        continue;
+      }
+      //remaining case is a reciprocal relationship - it counts unless the request is in the opposite direction
+      if ($requester->uid == $val_rel->requester_id) {
+        $test_relationships[$key]=$key;
+      }
+    }
+  }
+  //check if there aren't any available (not yet used) types that can be established
+  $select = db_select('user_relationship_types');
+  $select->addExpression('COUNT(*)', 'count');
+  if ($test_relationships) {
+    $select->condition('rtid', $test_relationships, 'NOT IN');
+  }
+  if (!$select->execute()->fetchField()) {
+    drupal_set_message(user_relationships_get_message('too_many_relationships'), 'error');
     drupal_goto();
+  }
+  //check if desided relationship type is among the unused ones
+  elseif (isset($test_relationships[$rtid])) {
+    $message_name = $test_relationships[$rtid]->approved ? 'existing_relationship' : 'existing_request';
+    form_set_error('rtid', user_relationships_get_message($message_name, NULL, array(
+      '!requester'                => theme('username', array('account' => $requester)),
+      '!requestee'                => theme('username', array('account' => $requestee)),
+      '%relationship_name'        => $current_relationships[$rtid][0]->name,
+      '%relationship_plural_name' => $current_relationships[$rtid][0]->plural_name
+    )));
   }
 }
 

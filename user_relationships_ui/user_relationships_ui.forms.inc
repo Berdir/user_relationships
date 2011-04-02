@@ -13,7 +13,7 @@ module_load_include('inc', 'user_relationships_ui', 'user_relationships_ui.actio
  * @param $form_values array $form['values'] when called from form_alter()
  */
 function user_relationships_ui_request_form($requester, $requestee, $form_values = NULL) {
-  $relationships = _user_relationships_ui_get_requestable_rtypes($requester, $requestee);
+  $relationships = user_relationships_ui_get_requestable_rtypes($requester, $requestee);
   //try to find out desired relationship type
   $default_relationship = NULL;
   if (isset($form_values['rtid'])) {//given through form
@@ -88,14 +88,6 @@ function user_relationships_ui_request($form, &$form_state, $requestee) {
       '#prefix' => '<div>',
       '#suffix' => '</div>',
       '#markup' => user_relationships_get_message('non_existent_user') . $script
-    );
-    return $form;
-  }
-  elseif (!user_access('can have relationships', $requestee)) {
-    $form['error'] = array(
-      '#prefix' => '<div>',
-      '#suffix' => '</div>',
-      '#markup' => user_relationships_get_message('not_accepting_requests') . $script
     );
     return $form;
   }

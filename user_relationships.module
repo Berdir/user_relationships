@@ -199,20 +199,26 @@ function _user_relationships_generate_query($param = array(), $options = array()
   return $query;
 }
 
-
 /**
- * hook_perm()
+ * Implements hook_permission().
  */
 function user_relationships_permission() {
-  return array('can have relationships' => array(
-    'title' => t('Can have relationships'),
-    'description' => t('The user is allowed to have and accept relationships.'),
-  ));
+  $permissions = array();
+  foreach (user_relationships_types_load() as $type) {
+    $permissions['can have ' . $type->name . ' relationships'] = array(
+      'title' => t('Can have @name relationships', array('@name' => $type->name)),
+      'description' => t('The user is allowed to have and accept relationships of that type.'),
+    );
+    $permissions['can request ' . $type->name . ' relationships'] = array(
+      'title' => t('Can request @name relationships', array('@name' => $type->name)),
+      'description' => t('The user is allowed to request relationships of that type.'),
+    );
+  }
+  return $permissions;
 }
 
-
 /**
- * hook_cron()
+ * Implements hook_cron()
  */
 function user_relationships_cron() {
   $now = REQUEST_TIME;
@@ -355,26 +361,9 @@ function user_relationships_types_load($reset = FALSE) {
   if ($reset || !isset($relationship_types_list)) {
     // Clear the cached list, since some relationships may have disappeared.
     $relationship_types_list = db_query("SELECT * FROM {user_relationship_types}")->fetchAllAssoc('rtid');
-    if (empty($relationship_types_list)) {
-      // No relationships, avoid querying role permissions.
-      return $relationship_types_list;
-    }
-    // Load role permissions for all types.
-    $result = db_query('SELECT rtid, rid FROM {user_relationship_type_roles} WHERE rtid IN (:rtids) ORDER BY rtid, rid', array(':rtids' => array_keys($relationship_types_list)));
-    foreach ($result as $mapping) {
-      // roles is an associative array {role id} => {role id}.
-      $relationship_types_list[$mapping->rtid]->roles[$mapping->rid] = $mapping->rid;//] = $mapping->name;
-    }
 
-    // Load role receive permissions for all types.
-    $results = db_query('SELECT rtid, rid FROM {user_relationship_type_roles_receive} WHERE rtid IN (:rtids) ORDER BY rtid, rid', array(':rtids' => array_keys($relationship_types_list)));
-    foreach ($results as $mapping) {
-      // roles_receive is an associative array {role id} => {role id}.
-      $relationship_types_list[$mapping->rtid]->roles_receive[$mapping->rid] = $mapping->rid;
-    }
+    module_invoke_all('user_relationships_type_load', $relationship_types_list);
   }
-
-  module_invoke_all('user_relationships_type_load', $relationship_types_list);
 
   return $relationship_types_list;
 }
@@ -425,12 +414,6 @@ function user_relationships_type_delete($rtid) {
     ->condition('rtid', $rtid)
     ->execute();
   db_delete('user_relationships')
-    ->condition('rtid', $rtid)
-    ->execute();
-  db_delete('user_relationship_type_roles')
-    ->condition('rtid', $rtid)
-    ->execute();
-  db_delete('user_relationship_type_roles_receive')
     ->condition('rtid', $rtid)
     ->execute();
 
@@ -740,68 +723,70 @@ function user_relationships_translate_user_info(&$relationship) {
 }
 
 /**
- * Check whether a user is allowed to request a certain relationship type
+ * Check whether a user is allowed to request a certain relationship type.
  *
- * @param $requester requesting user object or uid
- * @param $relationship_type loaded relationship type object or rtid
- * @return TRUE iff requester is allowed to request this type of relationship
+ * @param $requester
+ *   requesting user object
+ * @param $relationship_type
+ *   relationship type object
+ * @return
+ *   TRUE if requester is allowed to request this type of relationship.
  */
-function user_relationships_can_request($requester, $relationship_type) {
-  //validate arguments
-  if (is_numeric($requester)) {
-    $requester = user_load($requester);
-  }
-  if (is_numeric($relationship_type)) {
-    $relationship_type = user_relationships_type_load($relationship_type);
-  }
-  if (!is_object($requester) || !is_object($relationship_type)) {
-    return FALSE;
-  }
-  if ($requester->uid == 1) {
-    return TRUE;
-  }
-  //if no roles have been set, any user can request
-  if (!isset($relationship_type->roles) || !count($relationship_type->roles)) {
-    return TRUE;
-  }
-  //check user has at least one required role
-  foreach ($relationship_type->roles as $role_id) {
-    if (isset($requester->roles[$role_id])) {
-      return TRUE;
-    }
-  }
-  return FALSE;
+function user_relationships_can_request($requester, $relationship_type = NULL) {
+  return user_relationships_user_access('can request @relationship relationships', $relationship_type, $requester);
 }
 
 /**
- * Check whether a user is allowed to receive a certain relationship type
+ * Check whether a user is allowed to receive a certain relationship type.
  *
- * @param $requestee requesting user object or uid
- * @param $relationship_type loaded relationship type object or rtid
- * @return TRUE iff receiver is allowed to request this type of relationship
+ * @param $requestee
+ *   Requesting user object.
+ * @param $relationship_type
+ *   Relationship type for which should be checked. NULl to check for any.
+ *
+ * @return
+ *   TRUE if receiver is allowed to request this type of relationship
  */
-function user_relationships_can_receive($requestee, $relationship_type) {
-  //validate arguments
-  if (is_numeric($relationship_type)) {
-    $relationship_type = user_relationships_type_load($relationship_type);
+function user_relationships_can_receive($requestee, $relationship_type = NULL) {
+  return user_relationships_user_access('can have @relationship relationships', $relationship_type, $requestee);
+}
+
+/**
+ * Check if a user has a given permission.
+ *
+ * @param $permission
+ *   The permission that should be checked. Use @relationship for the
+ *   relationship type placeholder.
+ * @param $relationship
+ *   For which relationship type the permission should be checked. If NULL,
+ *   all relationship types are checked and TRUE is returned if $account has the
+ *   permission for at least one relationship type.
+ * @param $account
+ *   The account to check, if not given use currently logged in user.
+ *
+ * @return
+ *   TRUE if the user has the given permission for that relationship type or for
+ *   any type if no specific relationship was passed in, FALSE otherwise.
+ */
+function user_relationships_user_access($permission, $relationship = NULL, $account = NULL) {
+  if (!$account) {
+    global $user;
+    $account = $user;
   }
-  if (is_numeric($requestee)) {
-    $requestee = user_load($requestee);
+
+  if ($relationship) {
+    $relationships = array($relationship);
   }
-  if (!is_object($requestee) || !is_object($relationship_type)) {
-    return FALSE;
+  else {
+    $relationships = user_relationships_types_load();
   }
-  //if no roles have been set to receive the relationship, any user can receive it
-  if (!isset($relationship_type->roles_receive) || !count($relationship_type->roles_receive)) {
-    return TRUE;
-  }
-  //check user has at least one required role
-  foreach ($relationship_type->roles_receive as $role_id) {
-    if (isset($requestee->roles[$role_id])) {
+
+  foreach ($relationships as $r) {
+    $relationship_permission = str_replace('@relationship', $r->name, $permission);
+    if (user_access($relationship_permission, $account)) {
       return TRUE;
     }
   }
-  return FALSE;
 }
 
 /**
