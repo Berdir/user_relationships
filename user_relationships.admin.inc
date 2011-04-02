@@ -103,8 +103,8 @@ function user_relationships_admin_settings() {
   $form['messages']['user_relationships_requests_link'] = array(
     '#type' => 'textfield',
     '#title' => t('Path to relationship requests'),
-    '#default_value'  => variable_get('user_relationships_requests_link', 'relationships/requests'),
-    '#description' => t("Only change this setting if a user's pending relationship requests have a different location than the default path (relationships/requests)"),
+    '#default_value'  => variable_get('user_relationships_requests_link', 'relationships/received'),
+    '#description' => t("Only change this setting if a user's pending relationship requests have a different location than the default path (relationships/received)"),
   );
 
   $form['messages']['messages_settings'] = array(

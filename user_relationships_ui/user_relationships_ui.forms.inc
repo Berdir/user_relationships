@@ -188,6 +188,7 @@ function user_relationships_ui_pending_requested($form, &$form_state, $action, $
         '!name'               => theme('username', array('account' => user_load(($viewed_id == $relationship->requester_id ? $relationship->requestee_id : $relationship->requester_id))))
       ));
       $action_message = t('Approve relationship');
+      $request_url = 'relationships/received';
       break;
     case 'disapprove':
       $confirmation_message = t('Are you sure you want to decline the %relationship_name relationship request from !name?', array(
@@ -196,6 +197,7 @@ function user_relationships_ui_pending_requested($form, &$form_state, $action, $
         '!name'               => theme('username', array('account' => user_load(($viewed_id == $relationship->requester_id ? $relationship->requestee_id : $relationship->requester_id))))
       ));
       $action_message = t('Decline relationship');
+      $request_url = 'relationships/received';
       break;
     default:
       $confirmation_message = t('Are you sure you want to cancel your %relationship_name relationship request to !name?', array(
@@ -204,6 +206,7 @@ function user_relationships_ui_pending_requested($form, &$form_state, $action, $
         '!name'               => theme('username', array('account' => user_load(($viewed_id == $relationship->requester_id ? $relationship->requestee_id : $relationship->requester_id))))
       ));
       $action_message = t('Cancel relationship');
+      $request_url = 'relationships/sent';
   }
 
   // http://drupal.org/node/489954 respect destination param if given
@@ -211,7 +214,8 @@ function user_relationships_ui_pending_requested($form, &$form_state, $action, $
     $dest = $_GET['destination'];
   }
   else {
-    $dest = ($viewed_id == $user->id ? 'relationships/requests' : "user/{$viewed_id}/relationships/requests");
+
+    $dest = ($viewed_id == $user->id ? $request_url : "user/{$viewed_id}/$request_url");
   }
 
   global $user;

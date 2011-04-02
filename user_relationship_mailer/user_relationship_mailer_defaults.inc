@@ -45,13 +45,13 @@ function user_relationship_mailer_replacements($relationship = NULL) {
     '@requester_link'           => isset($requester->uid) ? theme('user_relationships_user_link', array('uid' => $requester->uid)) : '',
     '@requester_uid'            => isset($requester->uid) ? $requester->uid : '',
     '@requester_list_link'      => isset($requester->uid) ? url("user/{$requester->uid}/relationships/list", array('absolute' => TRUE)) : '',
-    '@requester_pending_link'   => isset($requester->uid) ? url("user/{$requester->uid}/relationships/requests", array('absolute' => TRUE)) : '',
+    '@requester_pending_link'   => isset($requester->uid) ? url("user/{$requester->uid}/relationships/sent", array('absolute' => TRUE)) : '',
 
     '@requestee_name'           => isset($requestee->name) ? format_username($requestee) : '',
     '@requestee_link'           => isset($requestee->uid) ? theme('user_relationships_user_link', array('uid' => $requestee->uid)) : '',
     '@requestee_uid'            => isset($requestee->uid) ? $requestee->uid : '',
     '@requestee_list_link'      => isset($requestee->uid) ? url("user/{$requestee->uid}/relationships/list", array('absolute' => TRUE)) : '',
-    '@requestee_pending_link'   => isset($requestee->uid) ? url("user/{$requestee->uid}/relationships/requests", array('absolute' => TRUE)) : '',
+    '@requestee_pending_link'   => isset($requestee->uid) ? url("user/{$requestee->uid}/relationships/received", array('absolute' => TRUE)) : '',
 
     '@relationship_name'        => isset($relationship->relationship_type) ? $relationship->relationship_type->name : '',
     '@relationship_plural_name' => isset($relationship->relationship_type) ? $relationship->relationship_type->plural_name : '',
