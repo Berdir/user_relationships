@@ -102,7 +102,7 @@ function user_relationships_update_7000() {
   $result = db_query("SELECT * FROM {variable} WHERE name LIKE 'user_relationships_ui_msg_%'");
   foreach ($result as $variable) {
     // Save as new variable.
-    variable_set(str_replace('_ui', '', $variable->name), unseralize($variable->value));
+    variable_set(str_replace('_ui', '', $variable->name), unserialize($variable->value));
     // Delete the old variable.
     variable_del($variable->name);
   }
