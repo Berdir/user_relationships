@@ -170,13 +170,7 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     '#type' => 'vertical_tabs',
   );
 
-  $form['general'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('General'),
-    '#group' => 'tabs',
-  );
-
-  $form['general']['name'] = array(
+  $form['name'] = array(
     '#type'           => 'textfield',
     '#title'          => t('Name'),
     '#maxlength'      => 255,
@@ -185,7 +179,7 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     '#required'       => TRUE,
     '#weight'         => -10,
   );
-  $form['general']['plural_name'] = array(
+  $form['plural_name'] = array(
     '#type'           => 'textfield',
     '#title'          => t('Plural name'),
     '#maxlength'      => 255,
@@ -194,14 +188,14 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     '#required'       => TRUE,
     '#weight'         => -9,
   );
-  $form['general']['requires_approval'] = array(
+  $form['requires_approval'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Requires Approval'),
     '#default_value'  => (isset($relationship_type->requires_approval) ? $relationship_type->requires_approval : 1),
     '#description'    => t('Check this if the requestee must approve the relationship'),
     '#weight'         => -8,
   );
-  $form['general']['expires_val'] = array(
+  $form['expires_val'] = array(
     '#title'          => t('Request expires in'),
     '#field_suffix'   => t('days'),
     '#type'           => 'textfield',
@@ -215,14 +209,14 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
       ),
     ),
   );
-  $form['general']['is_oneway'] = array(
+  $form['is_oneway'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('This is a one-way relationship'),
     '#default_value'  => isset($relationship_type) ? $relationship_type->is_oneway : NULL,
     '#description'    => t('Check this if this relationship should only go one way (ex Manager, Subscriber)'),
     '#weight'         => -6,
   );
-  $form['general']['is_reciprocal'] = array(
+  $form['is_reciprocal'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('This one-way relationship can be reciprocated'),
     '#default_value'  => isset($relationship_type) ? $relationship_type->is_reciprocal : NULL,
