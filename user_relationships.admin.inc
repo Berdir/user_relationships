@@ -465,46 +465,45 @@ function _user_relationships_update_translations(&$relationship_type) {
 function user_relationships_admin_types_list_page() {
   $relationship_types = user_relationships_types_load();
 
-  $table['headers'] = array(t('Name'), t('Plural'), t('Type'), t('Requires Approval'), t('Expiration'), t('Operations'));
-  $table['data'] = array();
-  $table['rows'] = array();
+  $headers = array(t('Name'), t('Type'), t('Requires Approval'), t('Operations'));
+  $rows = array();
 
   foreach ($relationship_types as $relationship) {
-    $table['data'][] = $relationship;
-    $table['rows'][] = array(
+
+    $approval = t('No');
+    if ($relationship->requires_approval) {
+      if ($relationship->expires_val) {
+        $approval = format_plural($relationship->expires_val, 'Yes (within 1 day)', 'Yes (within @count days)');
+      }
+      else {
+        $approval = t('Yes');
+      }
+    }
+
+    $rows[$relationship->rtid] = array(
       $relationship->name,
-      $relationship->plural_name,
-      ($relationship->is_oneway ? ($relationship->is_reciprocal ? t('reciprocal') : t('one way')) : t('mutual')),
-      ($relationship->requires_approval ? t('yes') : t('no')),
-      ($relationship->expires_val ? t('@expires_val', array('@expires_val' => format_plural($relationship->expires_val, '1 day', '@count days'))) : t('Never')),
-      l(t('edit'),    "admin/config/people/relationships/{$relationship->rtid}/edit") .' | '.
+      ($relationship->is_oneway ? ($relationship->is_reciprocal ? t('Reciprocal') : t('One-way')) : t('Mutual')),
+      $approval,
+      l(t('edit'),    "admin/config/people/relationships/{$relationship->rtid}/edit") . ' | ' .
       l(t('delete'),  "admin/config/people/relationships/{$relationship->rtid}/delete")
     );
-  }
-
-  foreach (module_implements('user_relationships_page_alter') as $module) {
-    $function = "{$module}_user_relationships_page_alter";
-    $function('types list', $page, $table);
-  }
-
-  if (!sizeof($table['rows'])) {
-    $table['rows'][] = array(array('data' => t('No relationships available.'), 'colspan' => sizeof($table['headers'])));
   }
 
   $page['relationships'] = array(
     '#type'   => 'fieldset',
     '#title'  => t('Relationship Types'),
     '#weight' => 0,
-    // No automatic fieldset processing to avoid fatal error. Maybe a core bug?
-    '#pre_render' => array(),
-    // Avoid notice/error in seven theme.
-    '#attributes' => array(),
   );
   $page['relationships']['list'] = array(
-    '#markup' => theme('table', array('header' => $table['headers'], 'rows' => $table['rows']))
+    '#theme' => 'table',
+    '#header' => $headers,
+    '#rows' => $rows,
+    '#empty' => t('No relationships available.'),
   );
 
-  return drupal_render($page);
+  drupal_alter('user_relationships_types_list', $page);
+
+  return $page;
 }
 
 

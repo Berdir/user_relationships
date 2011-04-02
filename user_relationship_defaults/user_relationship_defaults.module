@@ -258,36 +258,29 @@ function _user_relationship_defaults_create_default_relationships($account) {
 /**
  * hook_user_relationships_admin_page_alter()
  */
-function user_relationship_defaults_user_relationships_page_alter($page_id, &$page, &$current_table) {
-  switch ($page_id) {
-  case 'types list':
-    $defaults = user_relationship_defaults_load();
+function user_relationship_defaults_user_relationships_types_list_alter(&$page) {
+  $defaults = user_relationship_defaults_load();
 
-    $default_rows = array();
-    foreach ($defaults as $default) {
-      $default_rows[] = array(
-        theme('username', array('account' => $default->user)),
-        $default->relationship_type->name,
-        l(t('delete'), "admin/config/people/relationships/defaults/{$default->rdid}/delete"),
-      );
-    }
-
-    if (sizeof($default_rows) <= 0) {
-      $default_rows[] = array(array('data' => t('No default relationships available.'), 'colspan' => 3));
-    }
-
-    $page['defaults'] = array(
-      '#type'   => 'fieldset',
-      '#title'  => t('Default Relationships'),
-      '#weight' => 2,
-      '#pre_render' => array(),
-      '#attributes' => array(),
+  $default_rows = array();
+  foreach ($defaults as $default) {
+    $default_rows[] = array(
+      $default->relationship_type->name,
+      theme('username', array('account' => $default->user)),
+      l(t('delete'), "admin/config/people/relationships/defaults/{$default->rdid}/delete"),
     );
-      $page['defaults']['list'] = array(
-        '#markup' => theme('table', array('header' => array(t('User'), t('Relationship'), t('Operations')), 'rows' => $default_rows))
-      );
-    break;
   }
+
+  $page['defaults'] = array(
+    '#type'   => 'fieldset',
+    '#title'  => t('Default Relationships'),
+    '#weight' => 2,
+  );
+  $page['defaults']['list'] = array(
+    '#theme' => 'table',
+    '#header' => array(t('Relationship type'), t('User'), t('Operations')),
+    '#rows' => $default_rows,
+    '#empty' => t('No default relationships available.'),
+  );
 }
 
 /**

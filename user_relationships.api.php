@@ -129,3 +129,31 @@ function hook_user_relationships_insert($relationship) {
 function hook_user_relationships_delete($relationship, $action) {
 
 }
+
+/**
+ * Alter the relationship types listing page.
+ */
+function hook_user_relationships_types_list_alter(&$page) {
+  $defaults = user_relationship_defaults_load();
+
+  $default_rows = array();
+  foreach ($defaults as $default) {
+    $default_rows[] = array(
+      theme('username', array('account' => $default->user)),
+      $default->relationship_type->name,
+      l(t('delete'), "admin/config/people/relationships/defaults/{$default->rdid}/delete"),
+    );
+  }
+
+  $page['defaults'] = array(
+    '#type'   => 'fieldset',
+    '#title'  => t('Default Relationships'),
+    '#weight' => 2,
+  );
+  $page['defaults']['list'] = array(
+    '#theme' => 'table',
+    '#header' => array(t('User'), t('Relationship'), t('Operations')),
+    '#rows' => $default_rows,
+    '#empty' => t('No default relationships available.'),
+  );
+}
