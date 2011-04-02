@@ -12,7 +12,7 @@ class views_handler_filter_user_relationships_type extends views_handler_filter_
   function value_form(&$form, &$form_state) {
     $values = array();
     if ($this->value) {
-      $values = db_query("SELECT * FROM {user_relationship_types} rt WHERE rtid IN (:values)", array(':values' => $this->value))->fetchAll();
+      $values = db_query("SELECT name FROM {user_relationship_types} rt WHERE rtid IN (:values)", array(':values' => $this->value))->fetchCol();
     }
 
     sort($values);
@@ -75,23 +75,21 @@ class views_handler_filter_user_relationships_type extends views_handler_filter_
    */
   function validate_type_strings(&$form, $values) {
     $rtids = array();
-    $placeholders = array();
-    $args = array();
-    $results = array();
+    $names = array();
     foreach ($values as $value) {
       $missing[strtolower($value)] = TRUE;
-      $args[] = $value;
-      $placeholders[] = "'%s'";
+      $names[] = $value;
     }
 
-    if (!$args) {
+    if (!$names) {
       return $rtids;
     }
 
-    $result = db_query("SELECT * FROM {user_relationship_types} WHERE name IN (:placeholders)", array(':placeholders' => $args));
-    foreach ($result as $rtid) {
-      unset($missing[strtolower($rtype->name)]);
-      $rtids[] = $rtype->rtid;
+    foreach ($names as $name) {
+      if ($rtype = user_relationships_type_load(array('name' => $name))) {
+        unset($missing[strtolower($rtype->name)]);
+        $rtids[] = $rtype->rtid;
+      }
     }
 
     if ($missing) {
