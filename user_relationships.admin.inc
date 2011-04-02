@@ -229,27 +229,6 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     ),
   );
 
-  $form['roles'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Allowed Roles'),
-    '#group' => 'tabs',
-    '#weight' => 10,
-  );
-
-  $form['roles']['roles'] = array(
-    '#type' => 'checkboxes',
-    '#options' => user_roles(TRUE),
-    '#default_value' => isset($relationship_type->roles) ? $relationship_type->roles : array(),
-    '#title' => t('Role request access'),
-    '#description' => t('You may choose which roles are allowed to request this relationship. If none are selected, all roles are allowed.'),
-  );
-  $form['roles']['roles_receive'] = array(
-    '#type' => 'checkboxes',
-    '#options' => user_roles(TRUE),
-    '#default_value' => isset($relationship_type->roles_receive)  && is_array($relationship_type->roles_receive) ? $relationship_type->roles_receive : array(),
-    '#title' => t('Role receive access'),
-    '#description' => t('You may choose which roles are allowed to receive this relationship. If none are selected, all roles are allowed to receive the relationship.'),
-  );
   $form['rtid'] = array(
     '#type'   => 'value',
     '#value'  => isset($relationship_type->rtid) ? (int)$relationship_type->rtid : NULL,
@@ -379,36 +358,6 @@ function user_relationships_admin_type_edit_submit($form, &$form_state) {
     );
   }
 
-  //save role permissions for this rtype
-  db_delete('user_relationship_type_roles')
-    ->condition('rtid', $relationship_type->rtid)
-    ->execute();
-  if ($form_state['values']['roles']) {
-    $role_record = new StdClass;
-    $role_record->rtid = $relationship_type->rtid;
-    foreach ($form_state['values']['roles'] as $rid => $selected) {
-      if ($rid == $selected) {
-        $role_record->rid = $selected;
-        drupal_write_record('user_relationship_type_roles', $role_record);
-      }
-    }
-  }
-
-  //save role receive permissions for this rtype
-  db_delete('user_relationship_type_roles_receive')
-    ->condition('rtid', $relationship_type->rtid)
-    ->execute();
-  if ($form_state['values']['roles_receive']) {
-    $role_receive_record = new StdClass;
-    $role_receive_record->rtid = $relationship_type->rtid;
-    foreach ($form_state['values']['roles_receive'] as $rid => $selected) {
-      if ($rid == $selected) {
-        $role_receive_record->rid = $selected;
-        drupal_write_record('user_relationship_type_roles_receive', $role_receive_record);
-      }
-    }
-  }
-
   user_relationships_types_load(TRUE);
   menu_rebuild();
 
@@ -422,17 +371,7 @@ function user_relationships_admin_type_edit_submit($form, &$form_state) {
 function user_relationships_admin_type_delete_submit($form, &$form_state) {
   $relationship_type = user_relationships_type_load($form_state['values']['rtid']);
 
-  db_delete('user_relationship_type_roles')
-    ->condition('rtid', $relationship_type->rtid)
-    ->execute();
-  db_delete('user_relationships')
-    ->condition('rtid', $relationship_type->rtid)
-    ->execute();
-  db_delete('user_relationship_types')
-    ->condition('rtid', $relationship_type->rtid)
-    ->execute();
-
-  module_invoke_all('user_relationships_type_delete', $relationship_type);
+  user_relationships_type_delete($form_state['values']['rtid']);
 
   // #371311 force menu rebuild
   user_relationships_types_load(TRUE);

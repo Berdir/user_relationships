@@ -91,6 +91,10 @@ class UserRelationshipsTestCase extends DrupalWebTestCase {
     $this->rtypes['approval-reciprocal'] = $rtype;
 
     user_relationships_types_load(TRUE);
+
+    // Flush permission cache.
+    user_relationships_types_load(TRUE);
+    $this->checkPermissions(array(), TRUE);
   }
 
   function tearDown() {
@@ -100,18 +104,28 @@ class UserRelationshipsTestCase extends DrupalWebTestCase {
 
   //Test #479486 duplicate records for two-way relationships
   function testUserRelationshipsLoadDuplicates() {
-    $u1 = $this->drupalCreateUser();
-    $u2 = $this->drupalCreateUser();
-    $u3 = $this->drupalCreateUser();
-    $u4 = $this->drupalCreateUser();
+    $permissions = array(
+      'can have ' . $this->rtypes['oneway']->name . ' relationships',
+      'can request ' . $this->rtypes['oneway']->name . ' relationships',
+      'can have ' . $this->rtypes['twoway']->name . ' relationships',
+      'can request ' . $this->rtypes['twoway']->name . ' relationships',
+      'can have ' . $this->rtypes['approval-oneway']->name . ' relationships',
+      'can request ' . $this->rtypes['approval-oneway']->name . ' relationships',
+      'can have ' . $this->rtypes['approval']->name . ' relationships',
+      'can request ' . $this->rtypes['approval']->name . ' relationships',
+    );
+    $u1 = $this->drupalCreateUser($permissions);
+    $u2 = $this->drupalCreateUser($permissions);
+    $u3 = $this->drupalCreateUser($permissions);
+    $u4 = $this->drupalCreateUser($permissions);
     //create relationships
-    user_relationships_request_relationship($u1, $u2, $this->rtypes['oneway']->rtid, FALSE);
-    user_relationships_request_relationship($u1, $u3, $this->rtypes['oneway']->rtid, FALSE);
+    $this->assertTrue((bool)user_relationships_request_relationship($u1, $u2, $this->rtypes['oneway']->rtid, FALSE));
+    $this->assertTrue((bool)user_relationships_request_relationship($u1, $u3, $this->rtypes['oneway']->rtid, FALSE));
 //    user_relationships_request_relationship($u3, $u1, $this->rtypes['oneway']->rtid, FALSE);//this is a no-op
 
-    user_relationships_request_relationship($u1, $u2, $this->rtypes['twoway']->rtid, FALSE);
-    user_relationships_request_relationship($u1, $u3, $this->rtypes['twoway']->rtid, FALSE);
-    user_relationships_request_relationship($u4, $u1, $this->rtypes['twoway']->rtid, FALSE);
+    $this->assertTrue((bool)user_relationships_request_relationship($u1, $u2, $this->rtypes['twoway']->rtid, FALSE));
+    $this->assertTrue((bool)user_relationships_request_relationship($u1, $u3, $this->rtypes['twoway']->rtid, FALSE));
+    $this->assertTrue((bool)user_relationships_request_relationship($u4, $u1, $this->rtypes['twoway']->rtid, FALSE));
     //test between
     $result = user_relationships_load(array('between' => array($u1->uid, $u2->uid)));
     $this->assertEqual(count($result), 2);

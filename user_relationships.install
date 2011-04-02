@@ -45,28 +45,6 @@ function user_relationships_schema() {
     'primary key' => array('rtid')
   );
 
-  $schema['user_relationship_type_roles'] = array(
-    'fields' => array(
-      'rtid'              => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-      'rid'              => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-    ),
-    'primary key' => array('rtid', 'rid'),
-    'indexes' => array(
-      'rtid' => array('rtid'),
-    )
-  );
-
-  $schema['user_relationship_type_roles_receive'] = array(
-    'fields' => array(
-      'rtid'              => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-      'rid'              => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-    ),
-    'primary key' => array('rtid', 'rid'),
-    'indexes' => array(
-      'rtid' => array('rtid'),
-    )
-  );
-
   return $schema;
 }
 
@@ -106,4 +84,13 @@ function user_relationships_update_7000() {
     // Delete the old variable.
     variable_del($variable->name);
   }
+}
+
+/**
+ * Remove user relationship type roles tables.
+ */
+function user_relationships_update_7001() {
+  drupal_set_message(('Allowed roles settings for user relationship types must now be set by configuring the corresponding permissions explicitly.'));
+  db_drop_table('user_relationship_type_roles');
+  db_drop_table('user_relationship_type_roles_receive');
 }
