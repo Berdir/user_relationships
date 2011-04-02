@@ -28,7 +28,7 @@ function user_relationship_implications_theme() {
 /**
  * hook_form_alter()
  */
-function user_relationship_implications_form_user_relationships_ui_type_edit_alter(&$form, &$form_state) {
+function user_relationship_implications_form_user_relationships_admin_type_edit_alter(&$form, &$form_state) {
   $relationship_type  = isset($form['rtid']['#value']) ? user_relationships_type_load($form['rtid']['#value']) : NULL;
   $relationship_types = user_relationships_types_load();
 
