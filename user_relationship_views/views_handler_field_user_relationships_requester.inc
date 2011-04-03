@@ -12,9 +12,9 @@ class views_handler_field_user_relationships_requester extends views_handler_fie
   }
   
   function render($values) {
-    $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
     $uid = $values->{$this->aliases['requester_id']};
-    return l($text, "user/$uid");
+    $requester = user_load($uid);
+    return theme('username', array('account' => $requester));
   }
   
 }
