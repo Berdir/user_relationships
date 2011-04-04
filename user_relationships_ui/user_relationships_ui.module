@@ -309,7 +309,7 @@ function user_relationships_ui_menu() {
     'menu_name' => 'user-menu',
   );
   $items['relationships/list'] = array(
-    'title' => 'All',
+    'title' => 'Confirmed',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
     'access callback' => 'user_relationships_ui_check_access',
