@@ -184,13 +184,15 @@ function user_relationship_mailer_form_user_relationships_ui_settings_alter(&$fo
  * Implements hook_form_alter().
  */
 function user_relationship_mailer_form_alter(&$form, &$form_state, $form_id) {
-  if (($form_id == 'user_register_form' || $form_id == 'user_profile_form') && $form['#user_category'] == 'account' && variable_get('user_relationship_mailer_send_mail', FALSE) && user_access('maintain own relationships')) {
+  if (($form_id == 'user_register_form' || $form_id == 'user_profile_form') && $form['#user_category'] == 'account') {
+    $access = variable_get('user_relationship_mailer_send_mail', FALSE) && user_access('maintain own relationships');
     $form['user_relationships_ui_settings']['user_relationship_mailer_send_mail'] = array(
       '#type'           => 'checkbox',
       '#title'          => t('Receive e-mail notification of relationship activity'),
       '#default_value'  => isset($form['#user']->user_relationship_mailer_send_mail) ? $form['#user']->user_relationship_mailer_send_mail : TRUE,
       '#description'    => t("If checked, we will e-mail you when there are changes to your relationship status with other users."),
       '#weight'         => -10,
+      '#access' => $access,
     );
   }
 }
