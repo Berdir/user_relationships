@@ -129,7 +129,7 @@ function user_relationship_elaborations_form_alter(&$form, $form_state, $form_id
       }
       break;
 
-    case 'user_relationships_ui_settings':
+    case 'user_relationships_admin_settings':
       $form['user_relationships_elaborations'] = array(
         '#type'   => 'fieldset',
         '#title'  => t('Elaborations'),
