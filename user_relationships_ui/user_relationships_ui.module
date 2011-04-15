@@ -723,8 +723,8 @@ function user_relationships_ui_user_relationships_type_insert($relationship_type
   db_merge('user_relationships_ui_settings')
     ->key(array('rtid' => $relationship_type->rtid))
     ->fields(array(
-      'hide' => $relationship_type->ui_settings_hide,
-      'show_tab' => $relationship_type->ui_settings_show_tab,
+      'hide' => isset($relationship_type->ui_settings_hide) ? (int)$relationship_type->ui_settings_hide : 0,
+      'show_tab' => isset($relationship_type->ui_settings_show_tab) ? (int)$relationship_type->ui_settings_show_tab : 0,
     ))
     ->execute();
 }
@@ -736,8 +736,8 @@ function user_relationships_ui_user_relationships_type_update($relationship_type
   db_merge('user_relationships_ui_settings')
     ->key(array('rtid' => $relationship_type->rtid))
     ->fields(array(
-      'hide' => (int)$relationship_type->ui_settings_hide,
-      'show_tab' => (int)$relationship_type->ui_settings_show_tab,
+      'hide' => isset($relationship_type->ui_settings_hide) ? (int)$relationship_type->ui_settings_hide : 0,
+      'show_tab' => isset($relationship_type->ui_settings_show_tab) ? (int)$relationship_type->ui_settings_show_tab : 0,
     ))
     ->execute();
 }
