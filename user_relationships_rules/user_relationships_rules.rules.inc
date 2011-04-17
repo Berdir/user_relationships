@@ -2,7 +2,8 @@
 
 
 /**
- * @file rules integration for the system module
+ * @file
+ * Rules integration for the system module
  */
 
 /**

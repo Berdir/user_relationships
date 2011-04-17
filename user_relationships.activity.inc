@@ -8,7 +8,7 @@
  */
 
 /**
- * Implementation of hook_activity_grants().
+ * Implements hook_activity_grants().
  */
 function user_relationships_activity_grants($activity) {
   $relationships = array();

@@ -212,7 +212,7 @@ function user_relationships_ui_get_table_row($relationship, $account) {
  * @return
  *   Array with the table header definition.
  *
- * @see hook_user_relationships_ui_table_header_alter().
+ * @see hook_user_relationships_ui_table_header_alter()
  */
 function user_relationships_ui_get_table_header($edit_access) {
   $header = array(t('User'), t('Relationship'), t('Operations'));

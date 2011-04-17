@@ -1,8 +1,10 @@
 <?php
 /**
+ * @file
+ * Link general user relationship functionalities to services module.
+ *
  * @author Drupal 6 port by Darren Ferguson <http://drupal.org/user/70179>
  * @author Written by scottgifford http://drupal.org/user/245699
- * @file Link general user relationship functionalities to services module.
  */
 
 
@@ -73,7 +75,7 @@ function user_relationship_service_request($version, $uid, $type_name) {
     if (!$ret) {
       throw new Exception(t('Unknown failure'));
     }
-    else if (!is_object($ret)) {
+    elseif (!is_object($ret)) {
       throw new Exception($ret);
     }
     return $ret;

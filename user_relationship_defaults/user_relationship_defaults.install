@@ -1,10 +1,11 @@
 <?php
 /**
- * @file User Relationships Defaults installation script
+ * @file
+ * User Relationships Defaults installation script
  */
 
 /**
- * Implementation of hook_schema()
+ * Implements hook_schema().
  */
 function user_relationship_defaults_schema() {
   $schema['user_relationship_defaults'] = array(

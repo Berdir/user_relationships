@@ -4,7 +4,7 @@
  * @file
  * User Relationships Views support. Declares all the main tables to Views
  * @author Alex Karshakevich http://drupal.org/user/183217
- **/
+ */
 
 /**
  * hook_views_data()
@@ -17,20 +17,20 @@ function user_relationship_views_views_data() {
         'users' => array(
           'table' => 'user_relationships',
           'left_field' => 'uid',
-          'field' => 'requestee_id'
-         ),
-         'node' => array(
-           'table' => 'user_relationships',
-           'left_field' => 'uid',
-           'field' => 'requester_id'
-         ),
-         'user_relationship_types' => array(
-           'left_table' => 'user_relationship_types',
-           'table' => 'user_relationships',
-           'left_field' => 'rtid',
-           'field' => 'rtid'
-         )
-       ),
+          'field' => 'requestee_id',
+        ),
+        'node' => array(
+          'table' => 'user_relationships',
+          'left_field' => 'uid',
+          'field' => 'requester_id',
+        ),
+        'user_relationship_types' => array(
+          'left_table' => 'user_relationship_types',
+          'table' => 'user_relationships',
+          'left_field' => 'rtid',
+          'field' => 'rtid',
+        ),
+      ),
       'base' => array(
         'field' => 'rid',
         'title' => t('User relationship'),
@@ -53,7 +53,7 @@ function user_relationship_views_views_data() {
         'help' => t('Bring in name, type, and other properties of relationships'),
       ),
     ),
-    'rtype' => array( // virtual field for simple views that just need the relationship name, and don't want to use a views relationship
+    'rtype' => array(// virtual field for simple views that just need the relationship name, and don't want to use a views relationship
       'title' => t('Relationship type'),
       'help' => t('Singular or plural name of the relationship'),
       'real field' => 'rtid',
@@ -84,7 +84,7 @@ function user_relationship_views_views_data() {
       'filter' => array(
         'handler' => 'views_handler_filter_user_name'
       ),
-      'relationship' => array( // this relationship brings in all fields the users table offers
+      'relationship' => array(// this relationship brings in all fields the users table offers
         'base' => 'users',
         'field' => 'uid',
         'label' => 'requester',
@@ -115,7 +115,7 @@ function user_relationship_views_views_data() {
       'filter' => array(
         'handler' => 'views_handler_filter_user_name'
       ),
-      'relationship' => array( // this relationship brings in all fields the users table offers
+      'relationship' => array(// this relationship brings in all fields the users table offers
         'base' => 'users',
         'field' => 'uid',
         'label' => 'requestee',
@@ -180,8 +180,8 @@ function user_relationship_views_views_data() {
       ),
     ),
     'requester_or_requestee_current_user' => array(
-      'title'  => t('Requester or Requestee is current user'),
-      'help'   => t('Current user who requested or accepted the relationship'),
+      'title' => t('Requester or Requestee is current user'),
+      'help' => t('Current user who requested or accepted the relationship'),
       'filter' => array(
         'handler' => 'views_handler_filter_user_relationships_requester_or_requestee_current_user',
       ),

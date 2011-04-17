@@ -119,18 +119,4 @@
     });
   };
 
-  $(document).ready(function() {
-    $('#edit-is-oneway').click(function () {
-      if ($('#edit-is-oneway').attr('checked')) {
-        $('#edit-is-reciprocal-wrapper').slideDown('slow');
-      }
-      else {
-        $('#edit-is-reciprocal-wrapper').slideUp('slow');
-      }
-    });
-
-    if (!$('#edit-is-oneway').attr('checked')) {
-      $('#edit-is-reciprocal-wrapper').hide();
-    }
-  });
 })(jQuery);

@@ -38,7 +38,7 @@ class views_handler_field_user_relationships_status_link extends views_handler_f
       else {
         return
         theme('user_relationships_pending_request_approve_link', array('uid' => $values->{$this->aliases['requestee_id']}, 'rid' => $values->{$this->aliases['rid']})) .
-        ' | '.
+        ' | ' .
         theme('user_relationships_pending_request_disapprove_link', array('uid' => $values->{$this->aliases['requestee_id']}, 'rid' => $values->{$this->aliases['rid']}));
       }
     }

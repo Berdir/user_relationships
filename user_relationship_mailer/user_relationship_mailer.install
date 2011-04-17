@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Installation functions for User Relationships Mailer module
+ * @file
+ * Installation functions for User Relationships Mailer module
  */
 
 function user_relationship_mailer_uninstall() {
@@ -13,5 +14,4 @@ function user_relationship_mailer_uninstall() {
     variable_del("user_relationship_mailer_{$op}_subject");
     variable_del("user_relationship_mailer_{$op}_message");
   }
-  
 }

@@ -124,7 +124,7 @@ function hook_user_relationships_insert($relationship) {
  *   String reason for removal ('cancel','disapprove','remove').
  *
  * @see user_relationships_delete_relationship()
- * 
+ *
  */
 function hook_user_relationships_delete($relationship, $action) {
 

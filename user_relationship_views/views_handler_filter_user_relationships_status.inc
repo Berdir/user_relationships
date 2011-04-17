@@ -13,8 +13,8 @@ class views_handler_filter_user_relationships_status extends views_handler_filte
     }
   }
 
-  function value_form(&$form, &$form_state) { 
-    parent::value_form($form, $form_state); 
+  function value_form(&$form, &$form_state) {
+    parent::value_form($form, $form_state);
     // 0 won't work as a key for checkboxes.
     $form['value'] = array(
       '#type' => 'select',

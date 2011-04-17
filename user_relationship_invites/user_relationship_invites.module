@@ -28,7 +28,7 @@ function user_relationship_invites_get_invite($code) {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implements hook_form_alter().
 */
 function user_relationship_invites_form_invite_form_alter(&$form, $form_state) {
   global $user;
@@ -50,7 +50,7 @@ function user_relationship_invites_invite_form_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_invite().
+ * Implements hook_invite().
 */
 function user_relationship_invites_invite($op, $args) {
   switch ($op) {
@@ -67,7 +67,7 @@ function user_relationship_invites_invite($op, $args) {
 }
 
 /**
- * Implementation of hook_user().
+ * Implements hook_user().
 */
 function user_relationship_invites_user($op, &$edit, &$account, $category = NULL) {
   if (!(module_exists('invite') && module_exists('user_relationships'))) {

@@ -937,7 +937,7 @@ function _user_relationships_get_from_array($needle, &$haystack) {
 }
 
 /**
- * Implementation of hook_locale().
+ * Implements hook_locale().
  */
 function user_relationships_ui_locale($op = 'groups') {
   switch ($op) {

@@ -1,6 +1,8 @@
 <?php
 /**
- * @file User Relationships Mailer implementation. Contains all default strings and action definitions
+ * @file
+ * User Relationships Mailer implementation. Contains all default strings and
+ * action definitions.
  */
 
 global $_user_relationship_mailer_ops;

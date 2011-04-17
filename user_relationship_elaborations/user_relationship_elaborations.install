@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @file User Relationship Elaborations installation script
- * Schema
+ * @file
+ * User Relationship Elaborations installation hooks
  */
 function user_relationship_elaborations_schema() {
   $schema['user_relationship_elaborations'] = array(

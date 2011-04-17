@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Installation functions for User Relationships UI module
+ * @file
+ * Installation functions for User Relationships UI module
  */
 
 function user_relationships_ui_schema() {
@@ -36,11 +37,11 @@ function user_relationships_ui_update_7001() {
   // Create a faked entry in {system} to avoid re-installing the schema of the
   // user_relationships module.
   db_update('system')
-   ->fields(array(
-     'schema_version' => 0,
-   ))
-   ->condition('name', 'user_relationships')
-   ->execute();
+    ->fields(array(
+      'schema_version' => 0,
+    ))
+    ->condition('name', 'user_relationships')
+    ->execute();
 
   module_enable(array('user_relationships'));
 

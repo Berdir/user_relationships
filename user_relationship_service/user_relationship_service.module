@@ -1,12 +1,14 @@
 <?php
 /**
+ * @file
+ * Link general user relationship functionalities to services module.
+ *
  * @author Drupal 6 port by Darren Ferguson <http://drupal.org/user/70179>
- * @author Written by scottgifford http://drupal.org/user/245699
- * @file Link general user relationship functionalities to services module.
+ * @author Written by scottgifford http://drupal.org/user/245699 
  */
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function user_relationship_service_help($path, $arg) {
   switch ($path) {
@@ -18,7 +20,7 @@ function user_relationship_service_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_service().
+ * Implements hook_service().
  */
 function user_relationship_service_service() {
   return array(

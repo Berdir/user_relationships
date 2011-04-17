@@ -15,7 +15,7 @@ class views_handler_filter_user_relationships_requester_or_requestee_current_use
     $this->ensure_my_table();
     $op = empty($this->value) ? '<>' : '=';
     $where = "($this->table_alias.requester_id $op ***CURRENT_USER*** OR $this->table_alias.requestee_id $op ***CURRENT_USER***)";
-    $this->query->add_where_expression($this->options['group'], $where);    
+    $this->query->add_where_expression($this->options['group'], $where);
   }
 }
 

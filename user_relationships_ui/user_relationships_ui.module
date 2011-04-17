@@ -225,7 +225,7 @@ function user_relationships_ui_check_access($types, $account = NULL) {
  **********************************/
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function user_relationships_ui_help($section) {
   switch ($section) {
@@ -240,7 +240,7 @@ function user_relationships_ui_help($section) {
 }
 
 /**
- * Implementation of hook_init().
+ * Implements hook_init().
  */
 function user_relationships_ui_init() {
   //do not enable ajax functions if set in admin/config/people/relationships/settings
@@ -260,7 +260,7 @@ function user_relationships_ui_init() {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_perm().
  */
 function user_relationships_ui_permission() {
   return array(
@@ -280,7 +280,7 @@ function user_relationships_ui_permission() {
 }
 
 /**
- * Implementation of hook_footer().
+ * Implements hook_footer().
  */
 function user_relationships_ui_page_alter(&$page) {
   // This is the div we are utilizing for the form popups for confirmation.
@@ -490,7 +490,7 @@ function user_relationships_ui_title_callback_pending($column, $account = NULL) 
   }
 }
 /**
- * Implementation of hook_user_login().
+ * Implements hook_user_login().
  */
 function user_relationships_ui_user_login(&$edit, $account) {
   if (user_access('maintain own relationships')) {
@@ -610,7 +610,7 @@ function user_relationships_ui_user_presave(&$edit, $account, $category) {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function user_relationships_ui_theme() {
   $theme_funcs = array(

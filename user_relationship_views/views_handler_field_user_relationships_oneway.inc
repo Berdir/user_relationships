@@ -10,7 +10,7 @@ class views_handler_field_user_relationships_oneway extends views_handler_field 
     parent::construct();
     $this->status_map = array('0' => t('mutual'), '1' => t('one way'));
   }
-  
+
   function render($values) {
     return $this->status_map[$values->{$this->field_alias}];
   }

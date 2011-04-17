@@ -10,10 +10,10 @@
  *
  * @param $delta
  *   The delta of the currently viewed block.
- * 
+ *
  * @return
  *   The uid of the user currently displayed on this page, if any.
- * 
+ *
  */
 function hook_user_relationship_blocks_get_uid($delta) {
   if (arg(0) == 'mypath') {

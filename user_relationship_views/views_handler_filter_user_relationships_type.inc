@@ -98,7 +98,7 @@ class views_handler_filter_user_relationships_type extends views_handler_filter_
 
     return $rtids;
   }
-  
+
   //Override to check that it's not adding IN ('') when filter is empty
   function query() {
     if (is_array($this->value)) {

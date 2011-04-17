@@ -7,7 +7,7 @@
  */
 
 /**
- *  Implementation of hook_views_api().
+ *  Implements hook_views_api().
  */
 function user_relationship_views_views_api() {
   return array(
@@ -17,7 +17,7 @@ function user_relationship_views_views_api() {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function user_relationship_views_menu() {
   // Path is not admin/build/views due to menu complications with the wildcards from

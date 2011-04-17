@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_default_view_views().
+ * Implements hook_default_view_views().
  */
 function user_relationship_views_views_default_views() {
   $view = new view;

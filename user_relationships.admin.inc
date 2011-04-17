@@ -261,7 +261,7 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
 
   $form['submit'] = array(
     '#type'   => 'submit',
-    '#value'  => t('Submit'),
+    '#value'  => (isset($relationship_type->rtid) ? t('Save relationship type') : t('Add relationship type')),
     '#weight' => 10,
   );
 
@@ -356,7 +356,7 @@ function user_relationships_admin_type_edit_submit($form, &$form_state) {
       'u_relationship',
       'User Relationships form: relationship %name added.', array('%name' => $relationship_type->name),
       WATCHDOG_NOTICE,
-      l(t('view'), 'admin/user/user_relationship/types/'. $relationship_type->rtid .'/edit')
+      l(t('view'), 'admin/user/user_relationship/types/' . $relationship_type->rtid . '/edit')
     );
   }
   else {
@@ -375,7 +375,7 @@ function user_relationships_admin_type_edit_submit($form, &$form_state) {
       'u_relationship',
       'User Relationships form: relationship %name updated.', array('%name' => $relationship_type->name),
       WATCHDOG_NOTICE,
-      l(t('view'), 'admin/config/people/relationships/'. $relationship_type->rtid .'/edit')
+      l(t('view'), 'admin/config/people/relationships/' . $relationship_type->rtid . '/edit')
     );
   }
 
@@ -525,7 +525,7 @@ function _user_relationships_message_settings_form(&$form, $defaults = array()) 
     if (is_array($value)) {
       $form[$key] = array(
         '#type'         => 'fieldset',
-        '#title'        => isset($translations[$key]) ? $translations[$key] : t(ucfirst(str_replace('_', ' ', $key))),
+        '#title'        => isset($translations[$key]) ? $translations[$key] : t(drupal_ucfirst(str_replace('_', ' ', $key))),
         '#collapsible'  => TRUE,
         '#collapsed'    => TRUE,
         '#description'  => t('The following tokens are available for use in your custom messages: @replaceables.', array('@replaceables' => implode($replaceables, ', '))),
@@ -536,7 +536,7 @@ function _user_relationships_message_settings_form(&$form, $defaults = array()) 
     else {
       $form["user_relationships_msg_{$key}"] = array(
         '#type'           => 'textfield',
-        '#title'          => isset($translations[$key]) ? $translations[$key] : t(ucfirst(str_replace('_', ' ', $key))),
+        '#title'          => isset($translations[$key]) ? $translations[$key] : t(drupal_ucfirst(str_replace('_', ' ', $key))),
         '#default_value'  => variable_get("user_relationships_msg_{$key}", $value)
       );
     }
