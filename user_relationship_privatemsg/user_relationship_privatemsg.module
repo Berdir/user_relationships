@@ -83,9 +83,9 @@ function theme_user_relationship_privatemsg_format($variables) {
 
   if ($relationship->account->uid == $user->uid) {
 
-    return t('your <a href="@url">%relationship</a>', array('%relationship' => $relationship->plural_name, '@url' => url('relationships/' . $relationship->rtid)));
+    return t('your <a href="@url">@rel_name_plural</a>', array('@url' => url('relationships/' . $relationship->rtid)) + user_relationships_type_translations($relationship));
   }
-  $name = t('%relationship of @username', array('%relationship' => $relationship->plural_name, '@username' => format_username($relationship->account)));
+  $name = t('@rel_name_plural of @username', array('@username' => format_username($relationship->account)) + user_relationships_type_translations($relationship));
   if (user_relationships_ui_check_access(array('user'), $relationship->account)) {
     return l($name, 'user/' . $relationship->account->uid . '/relationships/' . $relationship->rtid, array('html' => TRUE));
   }

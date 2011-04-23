@@ -278,3 +278,55 @@ class UserRelationshipsTestCase extends DrupalWebTestCase {
     $this-> assertFalse($rtype->is_reciprocal);
   }
 }
+
+/**
+ * User Relationship type tests.
+ */
+class UserRelationshipsTypesTestCase extends DrupalWebTestCase {
+
+  /**
+   * Implements getInfo().
+   */
+  function getInfo() {
+    return array(
+      'name' => t('User Relationships Types'),
+      'description' => t('Checks various user relationship types functions.'),
+      'group' => t('User Relationships'),
+    );
+  }
+
+  /**
+   * Enable modules.
+   */
+  function setUp() {
+    parent::setUp('user_relationships');
+  }
+
+  function testNames() {
+    // Create relationship type.
+    $relationship_type = (object)array(
+      'name' => $this->randomName(),
+      'plural_name' => $this->randomName(),
+      'reverse_name' => $this->randomName(),
+      'reverse_plural_name' => $this->randomName(),
+      'name_capitalized' => $this->randomName(),
+      'plural_name_capitalized' => $this->randomName(),
+      'reverse_name_capitalized' => $this->randomName(),
+      'reverse_plural_name_capitalized' => $this->randomName(),
+      'requires_approval' => FALSE,
+      'expires_val' => 0,
+    );
+
+    // First, check all names.
+    $this->assertEqual($relationship_type->name, user_relationships_type_get_name($relationship_type));
+    $this->assertEqual($relationship_type->plural_name, user_relationships_type_get_name($relationship_type, TRUE));
+    $this->assertEqual($relationship_type->reverse_name, user_relationships_type_get_name($relationship_type, FALSE, TRUE));
+    $this->assertEqual($relationship_type->reverse_plural_name, user_relationships_type_get_name($relationship_type, TRUE, TRUE));
+    $this->assertEqual($relationship_type->name_capitalized, user_relationships_type_get_name($relationship_type, FALSE, FALSE, TRUE));
+    $this->assertEqual($relationship_type->plural_name_capitalized, user_relationships_type_get_name($relationship_type, TRUE, FALSE, TRUE));
+    $this->assertEqual($relationship_type->reverse_name_capitalized, user_relationships_type_get_name($relationship_type, FALSE, TRUE, TRUE));
+    $this->assertEqual($relationship_type->reverse_plural_name_capitalized, user_relationships_type_get_name($relationship_type, TRUE, TRUE, TRUE));
+
+    // @todo: Test fallback strategy.
+  }
+}

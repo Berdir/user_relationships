@@ -100,11 +100,11 @@ function user_relationship_node_access_form_node_form_alter(&$form, &$form_state
   foreach ($types as $rtid => $type) {
     unset($types[$rtid]);
     if ($type->is_oneway) {
-      $types["{$rtid}_yt"] = t('Post to @type (you to them)', array('@type' => $type->plural_name));
-      $types["{$rtid}_ty"] = t('Post to @type (them to you)', array('@type' => $type->plural_name));
+      $types["{$rtid}_yt"] = t('Post to @rel_name', user_relationships_type_translations($type));
+      $types["{$rtid}_ty"] = t('Post to @rel_name_reverse', user_relationships_type_translations($type));
     }
     else {
-      $types[$rtid] = t('Post to @type', array('@type' => $type->plural_name));
+      $types[$rtid] = t('Post to @rel_name', user_relationships_type_translations($type));
     }
   }
   asort($types);

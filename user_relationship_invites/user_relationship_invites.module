@@ -83,7 +83,7 @@ function user_relationship_invites_form_user_register_form_alter(&$form, &$form_
     if (!$relationship_type->is_oneway || $relationship_type->requires_approval) {
       $form['relationship_invite_approve'] = array(
         '#type' => 'radios',
-        '#title' => t('Please confirm the %relationship_name request from !name', array('!name' => theme('username', array('account' => $inviter)), '%relationship_name' => $relationship_type->name)),
+        '#title' => t('Please confirm the @rel_name request from !name', array('!name' => theme('username', array('account' => $inviter))) + user_relationships_type_translations($relationship_type)),
         '#default_value' => 'approve',
         '#options' => array(
           'approve' => t('Yes'),

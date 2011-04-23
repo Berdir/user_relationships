@@ -33,11 +33,41 @@ function user_relationships_schema() {
     'fields' => array(
       'rtid'              => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
       'name'              => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
-      'plural_name'       => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
+      'plural_name'       => array('type' => 'varchar', 'length' => 255, 'default' => ''),
       'is_oneway'         => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'),
       'is_reciprocal'     => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'),
       'requires_approval' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'size' => 'tiny'),
       'expires_val'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'reverse_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'name_capitalized'  => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'plural_name_capitalized' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'reverse_name_capitalized' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'reverse_plural_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
+      'reverse_plural_name_capitalized' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+      ),
     ),
     'unique keys' => array(
       'name'  => array('name'),
@@ -100,4 +130,46 @@ function user_relationships_update_7001() {
  */
 function user_relationships_update_7002() {
   db_change_field('user_relationships', 'rid', 'rid', array('type' => 'int', 'not null' => TRUE));
+}
+
+/**
+ * Add table columns for reversed and capitalized names.
+ */
+function user_relationships_update_7003() {
+  $fields = array(
+    'reverse_name' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'default' => '',
+    ),
+    'name_capitalized'  => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'default' => '',
+    ),
+    'plural_name_capitalized' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'default' => '',
+    ),
+    'reverse_name_capitalized' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'default' => '',
+    ),
+    'reverse_plural_name' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'default' => '',
+    ),
+    'reverse_plural_name_capitalized' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'default' => '',
+    ),
+  );
+
+  foreach ($fields as $field => $definition) {
+    db_add_field('user_relationship_types', $field, $definition);
+  }
 }

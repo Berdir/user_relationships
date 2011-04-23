@@ -128,8 +128,8 @@ function user_relationships_ui_request($form, &$form_state, $requestee) {
       "user/$requestee->uid",
       isset($relationship) ?
       ($relationship->requires_approval
-       ? t('Are you sure you want to send a new %rel_name request to !name?', array('%rel_name' => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name), '%rel_plural_name' => ur_tt("user_relationships:rtid:$relationship->rtid:plural_name", $relationship->plural_name), '!name' => theme('username', array('account' => $requestee))))
-       : t("Are you sure you want to become !name's %rel_name?", array('!name' => theme('username', array('account' => $requestee)), '%rel_name' => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name)))) :
+       ? t('Are you sure you want to send a new @rel_name request to !name?', array('!name' => theme('username', array('account' => $requestee))) + user_relationships_type_translations($relationship))
+       : t("Are you sure you want to become !name's @rel_name?", array('!name' => theme('username', array('account' => $requestee))) + user_relationships_type_translations($relationship))) :
       '',
       t('Send'), t('Cancel'),
       'user_relationships_request_confirm'
@@ -175,29 +175,26 @@ function user_relationships_ui_pending_requested($form, &$form_state, $action, $
   //pick the correct question message: approve and disapprove are requests to current user, cancel is a request from current user
   switch ($action) {
     case 'approve':
-      $confirmation_message = t('Are you sure you want to approve the %relationship_name relationship request from !name?', array(
+      $confirmation_message = t('Are you sure you want to approve the @rel_name relationship request from !name?', array(
         '@action'             => $action,
-        '%relationship_name'  => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name),
         '!name'               => theme('username', array('account' => user_load(($viewed_id == $relationship->requester_id ? $relationship->requestee_id : $relationship->requester_id))))
-      ));
+      ) + user_relationships_type_translations($relationship));
       $action_message = t('Approve relationship');
       $request_url = 'relationships/received';
       break;
     case 'disapprove':
-      $confirmation_message = t('Are you sure you want to decline the %relationship_name relationship request from !name?', array(
+      $confirmation_message = t('Are you sure you want to decline the @rel_name relationship request from !name?', array(
         '@action'             => $action,
-        '%relationship_name'  => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name),
         '!name'               => theme('username', array('account' => user_load(($viewed_id == $relationship->requester_id ? $relationship->requestee_id : $relationship->requester_id))))
-      ));
+      ) + user_relationships_type_translations($relationship));
       $action_message = t('Decline relationship');
       $request_url = 'relationships/received';
       break;
     default:
-      $confirmation_message = t('Are you sure you want to cancel your %relationship_name relationship request to !name?', array(
+      $confirmation_message = t('Are you sure you want to cancel your @rel_name relationship request to !name?', array(
         '@action'             => $action,
-        '%relationship_name'  => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name),
         '!name'               => theme('username', array('account' => user_load(($viewed_id == $relationship->requester_id ? $relationship->requestee_id : $relationship->requester_id))))
-      ));
+      ) + user_relationships_type_translations($relationship));
       $action_message = t('Cancel relationship');
       $request_url = 'relationships/sent';
   }
@@ -265,10 +262,9 @@ function user_relationships_ui_remove($form, &$form_state, $account, $relationsh
     t('Remove relationship'),
     ($viewed_id == $user->uid ? 'relationships' : "user/{$viewed_id}/relationships/"),
 
-    t("Are you sure you want to delete the %relationship_name relationship with !name?", array(
-      '%relationship_name'  => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name),
+    t("Are you sure you want to delete the @rel_name relationship with !name?", array(
       '!name'               => theme('username', array('account' => user_load(($viewed_id == $relationship->requester_id ? $relationship->requestee_id : $relationship->requester_id))))
-    )),
+    ) + user_relationships_type_translations($relationship)),
     t('Yes'), t('No'),
     'user_relationships_remove_confirm'
   );

@@ -81,10 +81,10 @@ function theme_user_relationship_block_subject($variables) {
     global $user;
     $rtype = user_relationships_type_load($rtid);
     if ($account->uid == $user->uid) {
-      return t('I am a @rel_name of', array('@rel_name' => ur_tt("user_relationships:rtid:$rtid:name", $rtype->name), '@rel_plural_name' => $rtype->plural_name));
+      return t('I am a @rel_name of', user_relationships_type_translations($rtype));
     }
     else {
-      return t('@username is a @rel_name of', array('@username' => format_username($account), '@rel_name' => ur_tt("user_relationships:rtid:$rtid:name", $rtype->name), '@rel_plural_name' => $rtype->plural_name));
+      return t('@username is a @rel_name of', array('@username' => format_username($account)) + user_relationships_type_translations($rtype));
     }
   }
   else {
@@ -95,8 +95,8 @@ function theme_user_relationship_block_subject($variables) {
     else {
       $rtype = user_relationships_type_load($rtid);
       $output = ($account->uid == $user->uid)
-                ? t('My @relationships', array('@relationships' => ur_tt("user_relationships:rtid:$rtid:plural_name", $rtype->plural_name)))
-                : t("@username's @relationships", array('@username' => format_username($account), '@relationships' => ur_tt("user_relationships:rtid:$rtid:plural_name", $rtype->plural_name)));
+                ? t('My @rel_name', user_relationships_type_translations($rtype))
+                : t("@username's @rel_name", array('@username' => format_username($account)) + user_relationships_type_translations($rtype));
     }
     return $output;
   }
@@ -139,7 +139,7 @@ function user_relationship_blocks_block_configure($delta) {
     }
     else {
       $type = user_relationships_type_load($rtid);
-      $relationship_name = ur_tt("user_relationships:rtid:$rtid:name", $type->name);
+      $relationship_name = user_relationships_type_get_name($type);
     }
 
     $form['size'] = array(
@@ -156,7 +156,7 @@ function user_relationship_blocks_block_configure($delta) {
     );
 
     $user_identifier = ($block == UR_BLOCK_MY) ? t('currently logged in user') : t('author whose node is being viewed');
-    $msg = t("NOTE: This block displays @relationship_name relationships of the @user_identifier.", array('@relationship_name' => ur_tt("user_relationships:rtid:$rtid:name", $relationship_name), '@user_identifier' => $user_identifier));
+    $msg = t("NOTE: This block displays @rel_name relationships of the @user_identifier.", array('@rel_name' => $relationship_name, '@user_identifier' => $user_identifier));
 
     if ($extra) {
       $relation = $extra == 'you_to_them' ? t('requester') : t('requestee');
@@ -290,8 +290,8 @@ function user_relationship_blocks_block_info() {
 
     foreach ($extras as $token => $extra) {
       $block_types = array(
-        "{$my_delta}{$token}"   => t('My Relationships: @type @extra', array('@type' => $type->plural_name, '@extra' => $extra)),
-        "{$usr_delta}{$token}"  => t('User Relationships: @type @extra', array('@type' => $type->plural_name, '@extra' => $extra)),
+        "{$my_delta}{$token}"   => t('My Relationships: @rel_name_plural @extra', array('@extra' => $extra) + user_relationships_type_translations($type)),
+        "{$usr_delta}{$token}"  => t('User Relationships: @rel_name_plural @extra', array('@extra' => $extra) + user_relationships_type_translations($type)),
       );
       foreach ($block_types as $bid => $title) {
         $blocks[$bid] = array(

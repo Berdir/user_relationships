@@ -155,12 +155,6 @@ function user_relationships_admin_settings() {
 function user_relationships_admin_type_edit($form, &$form_state, $relationship_type = NULL) {
   if (!$relationship_type) {
     drupal_set_title(t('Add relationship type'));
-    $relationship_type = (object) array(
-      'name' => '',
-      'plural_name' => '',
-      'is_oneway' => FALSE,
-      'is_reciprocal' => FALSE,
-    );
   }
   else {
     drupal_set_title(t('Edit @name relationship type', array('@name' => $relationship_type->name)));
@@ -178,15 +172,6 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     '#description'    => t("Example: buddy, friend, coworker, spouse."),
     '#required'       => TRUE,
     '#weight'         => -10,
-  );
-  $form['plural_name'] = array(
-    '#type'           => 'textfield',
-    '#title'          => t('Plural name'),
-    '#maxlength'      => 255,
-    '#default_value'  => isset($relationship_type) ? $relationship_type->plural_name : NULL,
-    '#description'    => t("Example: buddies, friends, coworkers, spouses."),
-    '#required'       => TRUE,
-    '#weight'         => -9,
   );
   $form['requires_approval'] = array(
     '#type'           => 'checkbox',
@@ -229,6 +214,91 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     ),
   );
 
+  $form['branding'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Branding'),
+    '#group' => 'tabs',
+  );
+
+  $form['branding']['plural_name'] = array(
+    '#type'           => 'textfield',
+    '#title'          => t('Plural name'),
+    '#maxlength'      => 255,
+    '#default_value'  => isset($relationship_type->plural_name) ? $relationship_type->plural_name : NULL,
+    '#description'    => t("Example: buddies, friends, coworkers, spouses."),
+    '#weight'         => 2,
+  );
+
+  $form['branding']['name_capitalized'] = array(
+    '#type'           => 'textfield',
+    '#title'          => t('Capitalized name'),
+    '#maxlength'      => 255,
+    '#default_value'  => isset($relationship_type) ? $relationship_type->name_capitalized : NULL,
+    '#description'    => t("Example: buddies, friends, coworkers, spouses."),
+    '#weight'         => 6,
+  );
+
+  $form['branding']['plural_name_capitalized'] = array(
+    '#type'           => 'textfield',
+    '#title'          => t('Capitalized plural name'),
+    '#maxlength'      => 255,
+    '#default_value'  => isset($relationship_type) ? $relationship_type->plural_name_capitalized : NULL,
+    '#description'    => t("Example: buddies, friends, coworkers, spouses."),
+    '#weight'         => 10,
+  );
+
+  // #states doesn't work on a vertical tab fieldset, hide each input element
+  // separately.
+  $form['reverse_branding'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('One-way reverse branding'),
+    '#group' => 'tabs',
+    '#description' => t('One-way reversed branding is only used when this relationship type only goes one way. Then, these names are used when displaying relationships initiated by other users.'),
+    // Doesn't work properly yet.
+    '#states'         => array(
+      'visible'         => array(
+        ':input[name=is_oneway]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+
+  $form['reverse_branding']['reverse_name'] = array(
+    '#type'           => 'textfield',
+    '#title'          => t('Name'),
+    '#maxlength'      => 255,
+    '#default_value'  => isset($relationship_type) ? $relationship_type->reverse_name : NULL,
+    '#description'    => t("Example: buddies, friends, coworkers, spouses."),
+    '#weight'         => 0,
+  );
+
+  $form['reverse_branding']['reverse_plural_name'] = array(
+    '#type'           => 'textfield',
+    '#title'          => t('Plural name'),
+    '#maxlength'      => 255,
+    '#default_value'  => isset($relationship_type) ? $relationship_type->reverse_plural_name : NULL,
+    '#description'    => t("Example: buddies, friends, coworkers, spouses."),
+    '#weight'         => 4,
+  );
+
+  $form['reverse_branding']['reverse_name_capitalized'] = array(
+    '#type'           => 'textfield',
+    '#title'          => t('Capitalized name'),
+    '#maxlength'      => 255,
+    '#default_value'  => isset($relationship_type) ? $relationship_type->reverse_name_capitalized : NULL,
+    '#description'    => t("Example: buddies, friends, coworkers, spouses."),
+    '#weight'         => 8,
+  );
+
+  $form['reverse_branding']['reverse_plural_name_capitalized'] = array(
+    '#type'           => 'textfield',
+    '#title'          => t('Capitalized plural name'),
+    '#maxlength'      => 255,
+    '#default_value'  => isset($relationship_type) ? $relationship_type->reverse_plural_name_capitalized : NULL,
+    '#description'    => t("Example: buddies, friends, coworkers, spouses."),
+    '#weight'         => 12,
+  );
+
+
   $form['rtid'] = array(
     '#type'   => 'value',
     '#value'  => isset($relationship_type->rtid) ? (int)$relationship_type->rtid : NULL,
@@ -238,11 +308,21 @@ function user_relationships_admin_type_edit($form, &$form_state, $relationship_t
     '#value'  => (isset($relationship_type->rtid) ? 'edit' : 'add'),
   );
 
-  $form['submit'] = array(
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
     '#type'   => 'submit',
     '#value'  => (isset($relationship_type->rtid) ? t('Save relationship type') : t('Add relationship type')),
-    '#weight' => 10,
+    '#weight' => 0,
   );
+  if (module_exists('i18n_string')) {
+    $form['actions']['translate'] = array(
+      '#type'   => 'submit',
+      '#name'   => 'save_translate',
+      '#value'  => (isset($relationship_type->rtid) ? t('Save and translate') : t('Add and translate')),
+      '#weight' => 5,
+    );
+  }
+
 
   return $form;
 }
@@ -260,7 +340,7 @@ function user_relationships_admin_type_delete($form, &$form_state, $relationship
 
     return confirm_form(
       $form,
-      t('Are you sure you want to delete %name?', array('%name' => ur_tt("user_relationships:rtid:$relationship_type->rtid:name", $relationship_type->name))),
+      t('Are you sure you want to delete %rel_name?', user_relationships_type_translations($relationship_type)),
       'admin/config/people/relationships',
       t('This action cannot be undone.'),
       t('Delete'), t('Cancel')
@@ -317,19 +397,10 @@ function user_relationships_setting_validation($element, $validations) {
  */
 function user_relationships_admin_type_edit_submit($form, &$form_state) {
   $relationship_type = (object)$form_state['values'];
+
+  user_relationships_type_save($relationship_type);
+
   if ($form_state['values']['action'] == 'add') {
-    //#348025 when editing a type, make sure that two-way relationships are not left as reciprocal, just in case, as the UI allows it.
-    if (!$relationship_type->is_oneway) {
-      $relationship_type->is_reciprocal = 0;
-    }
-    drupal_write_record('user_relationship_types', $relationship_type);
-
-    // Update strings for translation
-    _user_relationships_update_translations($relationship_type);
-
-    $form_state['values']['rtid'] = $relationship_type->rtid;
-    module_invoke_all('user_relationships_type_insert', $relationship_type);
-
     drupal_set_message(t('Relationship %name has been added.', array('%name' => $relationship_type->name)));
     watchdog(
       'u_relationship',
@@ -339,16 +410,6 @@ function user_relationships_admin_type_edit_submit($form, &$form_state) {
     );
   }
   else {
-    //#348025 when editing a type, make sure that two-way relationships are not left as reciprocal, just in case, as the UI allows it.
-    if (!$relationship_type->is_oneway) {
-      $relationship_type->is_reciprocal = 0;
-    }
-    drupal_write_record('user_relationship_types', $relationship_type, 'rtid');
-
-    // Update strings for translation
-    _user_relationships_update_translations($relationship_type);
-    module_invoke_all('user_relationships_type_update', $relationship_type);
-
     drupal_set_message(t('Relationship %name has been updated.', array('%name' => $relationship_type->name)));
     watchdog(
       'u_relationship',
@@ -358,10 +419,9 @@ function user_relationships_admin_type_edit_submit($form, &$form_state) {
     );
   }
 
-  user_relationships_types_load(TRUE);
-  menu_rebuild();
+  $translate = module_exists('i18n_string') && $form_state['triggering_element']['#name'] == 'save_translate' ? TRUE : FALSE;
 
-  $form_state['redirect'] = 'admin/config/people/relationships';
+  $form_state['redirect'] = $translate ? 'admin/config/people/relationships/' . $relationship_type->rtid . '/translate' : 'admin/config/people/relationships';
 }
 
 
@@ -386,17 +446,6 @@ function user_relationships_admin_type_delete_submit($form, &$form_state) {
 
   $form_state['redirect'] = 'admin/config/people/relationships';
 }
-
-/**
- * Make relationship type available to translation by i18nstrings.module
- */
-function _user_relationships_update_translations(&$relationship_type) {
-  if (function_exists('i18nstrings_update') && $relationship_type->rtid) {
-    i18nstrings_update("user_relationships:rtid:$relationship_type->rtid:name", $relationship_type->name);
-    i18nstrings_update("user_relationships:rtid:$relationship_type->rtid:plural_name", $relationship_type->plural_name);
-  }
-}
-
 
 /**
  * Relationship Types List
@@ -480,4 +529,42 @@ function _user_relationships_message_settings_form(&$form, $defaults = array()) 
       );
     }
   }
+}
+
+/**
+ * Build a translation page for the given relationship type.
+ */
+function user_relationships_translate_tab_page($type, $language = NULL) {
+  module_load_include('inc', 'i18n_string', 'i18n_string.pages');
+  $form_meta = array(
+    '#page_title' => t('Translate relationship type'),
+    '#item_title_header' => t('Relationship type'),
+    '#item_title_key' => array('user_relationships', 'rtid', $type->rtid, 'name'),
+    '#item_title_default' => $type->name,
+    '#edit' => 'admin/config/people/relationships/' . $type->rtid . '/edit',
+    '#translate' => 'admin/config/people/relationships/' . $type->rtid . '/translate/',
+    '#items' => array(),
+  );
+  $form_meta['#items'][] = array(
+    '#title' => t('Name'),
+    '#string_key' => array('user_relationships', 'rtid', $type->rtid, 'name'),
+    '#default_value' => $type->name,
+  );
+  $form_meta['#items'][] = array(
+    '#title' => t('Plural name'),
+    '#string_key' => array('user_relationships', 'rtid', $type->rtid, 'plural_name'),
+    '#default_value' => $type->plural_name,
+  );
+  $form_meta['#items'][] = array(
+    '#title' => t('Capitalized name'),
+    '#string_key' => array('user_relationships', 'rtid', $type->rtid, 'name_capitalized'),
+    '#default_value' => $type->name_capitalized,
+  );
+  $form_meta['#items'][] = array(
+    '#title' => t('Plural capitalized name'),
+    '#string_key' => array('user_relationships', 'rtid', $type->rtid, 'plural_name_capitalized'),
+    '#default_value' => $type->plural_name_capitalized,
+  );
+  $form = i18n_string_translate_page($form_meta, $language);
+  return $form;
 }

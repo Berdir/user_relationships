@@ -53,7 +53,7 @@ function user_relationship_views_ajax_autocomplete_relationships_type($string = 
         if (strpos($rtype->name, ',') !== FALSE || strpos($rtype->name, '"') !== FALSE) {
           $n = '"'. str_replace('"', '""', $rtype->name) .'"';
         }
-        $matches[$prefix . $n] = check_plain(ur_tt("user_relationships:rtid:$rtype->rtid:name", $rtype->name));
+        $matches[$prefix . $n] = check_plain(user_relationships_type_get_name($rtype));
       }
     }
   }

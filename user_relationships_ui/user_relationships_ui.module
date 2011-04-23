@@ -63,20 +63,18 @@ function user_relationships_ui_actions_between($viewer, $viewed, $action_types =
   if (isset($action_types['requested'])) {
     $relationships = user_relationships_load(array('requester_id' => $viewer->uid, 'requestee_id' => $viewed->uid, 'approved' => FALSE));
     foreach ($relationships as $relationship) {
-      $list[] = t('You have sent a new %relationship_name request to this user. (!pending_requests)', array(
-        '%relationship_name'  => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name),
+      $list[] = t('You have sent a new @rel_name request to this user. (!pending_requests)', array(
         '!pending_requests'   => l(t('pending requests'), "relationships/sent"),
-      ));
+      ) + user_relationships_type_translations($relationship));
     }
   }
 
   if (isset($action_types['received'])) {
     $relationships = user_relationships_load(array('requester_id' => $viewed->uid, 'requestee_id' => $viewer->uid, 'approved' => FALSE));
     foreach ($relationships as $relationship) {
-      $list[] = t('This user has requested to be your %relationship_name. (!pending_requests)', array(
-        '%relationship_name'  => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name),
+      $list[] = t('This user has requested to be your @rel_name. (!pending_requests)', array(
         '!pending_requests'   => l(t('pending requests'), "user/{$viewer->uid}/relationships/received"),
-      ));
+      ) + user_relationships_type_translations($relationship));
     }
   }
 
@@ -101,8 +99,8 @@ function user_relationships_ui_actions_between($viewer, $viewed, $action_types =
     $relationships = user_relationships_load(array('between' => array($viewer->uid, $viewed->uid)));
     foreach ($relationships as $relationship) {
       if ($relationship->approved && !isset($list[$relationship->rid])) {
-        $list[$relationship->rid] = t('%relationship_name (!remove_link)', array(
-          '%relationship_name'  => ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name) . ($relationship->is_oneway ? ($relationship->requester_id == $viewer->uid ? t(' (You to Them)') : t(' (Them to You)')) : NULL),
+        $list[$relationship->rid] = t('@rel_name (!remove_link)', array(
+          '@rel_name'  => user_relationships_type_get_name($relationship) . ($relationship->is_oneway ? ($relationship->requester_id == $viewer->uid ? t(' (You to Them)') : t(' (Them to You)')) : NULL),
           '!remove_link'        => theme('user_relationships_remove_link', array('uid' => $viewer->uid, 'rid' => $relationship->rid)),
         ));
       }
@@ -111,7 +109,6 @@ function user_relationships_ui_actions_between($viewer, $viewed, $action_types =
 
   return $list;
 }
-
 
 /**********************************
  *          CALLBACKS
@@ -280,7 +277,8 @@ function user_relationships_ui_menu() {
   foreach (user_relationships_types_load() as $rtid => $relationship) {
     if (isset($show_tabs[$rtid])) {
       $items["relationships/{$rtid}"] = array(
-        'title' => $relationship->plural_name ? $relationship->plural_name : $relationship->name,
+        'title' => $relationship->rtid,
+        'title callback' => 'user_relationships_ui_title_callback',
         'type' => MENU_LOCAL_TASK,
         'access callback' => 'user_relationships_ui_check_access',
         'access arguments' => array('edit'),
@@ -357,7 +355,8 @@ function user_relationships_ui_menu() {
   );
   foreach (user_relationships_types_load() as $rtid => $relationship) {
     $items["user/%user/relationships/{$rtid}"] = array(
-      'title' => $relationship->plural_name ? $relationship->plural_name : $relationship->name,
+      'title' => $relationship->rtid,
+      'title callback' => 'user_relationships_ui_title_callback',
       'type' => MENU_LOCAL_TASK,
       'access callback' => 'user_relationships_ui_check_access',
       'access arguments' => array(array('user'), 1),
@@ -388,6 +387,10 @@ function user_relationships_ui_menu() {
   );
 
   return $items;
+}
+
+function user_relationships_ui_title_callback($rtid) {
+  return user_relationships_type_get_name(user_relationships_type_load($rtid), TRUE, FALSE, TRUE);
 }
 
 /**
@@ -498,7 +501,7 @@ function user_relationships_ui_form_alter(&$form, &$form_state, $form_id) {
         $options = array();
         foreach ($relationships as $relationship) {
           if ($relationship->requires_approval) {
-            $options[$relationship->rtid] = ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name);
+            $options[$relationship->rtid] = user_relationships_type_get_name($relationship);
           }
         }
 

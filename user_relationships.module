@@ -11,6 +11,10 @@
 define('UR_OK', 0x0);
 define('UR_BANNED', 0x1);
 
+define('USER_RELATIONSHIPS_NAME_PLURAL', 1);
+define('USER_RELATIONSHIPS_NAME_CAPITAL', 2);
+define('USER_RELATIONSHIPS_NAME_REVERSE', 4);
+
 function user_relationships_menu() {
   $items['admin/config/people/relationships'] = array(
     'title' => 'Relationships',
@@ -43,6 +47,25 @@ function user_relationships_menu() {
     'file' => 'user_relationships.admin.inc',
     'weight' => 5,
   );
+  if (module_exists('i18n_string')) {
+    $items['admin/config/people/relationships/%user_relationships_type/translate'] = array(
+      'title' => 'Translate',
+      'access callback' => 'user_relationships_translate_tab_access',
+      'page callback' => 'user_relationships_translate_tab_page',
+      'file' => 'user_relationships.admin.inc',
+      'page arguments' => array(4),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 10,
+    );
+    $items['admin/config/people/relationships/%user_relationships_type/translate/%language'] = array(
+      'title' => 'Translate',
+      'access callback' => 'user_relationships_translate_tab_access',
+      'page callback' => 'user_relationships_translate_tab_page',
+      'file' => 'user_relationships.admin.inc',
+      'page arguments' => array(4, 6),
+      'type' => MENU_CALLBACK,
+    );
+  }
   $items['admin/config/people/relationships/%user_relationships_type/delete'] = array(
     'title' => 'Delete type',
     'type' => MENU_LOCAL_TASK,
@@ -50,7 +73,7 @@ function user_relationships_menu() {
     'page arguments' => array('user_relationships_admin_type_delete', 4),
     'access arguments' => array('administer user relationships'),
     'file' => 'user_relationships.admin.inc',
-    'weight' => 10,
+    'weight' => 15,
   );
   $items['admin/config/people/relationships/settings'] = array(
     'title' => 'Settings',
@@ -70,6 +93,14 @@ function user_relationships_menu() {
   );
   return $items;
 }
+
+/**
+ * Menu access callback function.
+ */
+function user_relationships_translate_tab_access() {
+  return user_access('translate interface') && user_access('administer user relationships');
+}
+
 
 /**
  * Helper function to generate the main and count queries from a list of parameters and options
@@ -213,11 +244,11 @@ function user_relationships_permission() {
   $permissions = array();
   foreach (user_relationships_types_load() as $type) {
     $permissions['can have ' . $type->name . ' relationships'] = array(
-      'title' => t('Can have @name relationships', array('@name' => $type->name)),
+      'title' => t('Can have @rel_name relationships', user_relationships_type_translations($type)),
       'description' => t('The user is allowed to have and accept relationships of that type.'),
     );
     $permissions['can request ' . $type->name . ' relationships'] = array(
-      'title' => t('Can request @name relationships', array('@name' => $type->name)),
+      'title' => t('Can request @rel_name relationships', user_relationships_type_translations($type)),
       'description' => t('The user is allowed to request relationships of that type.'),
     );
   }
@@ -270,18 +301,6 @@ function user_relationships_user_cancel($edit, $account, $method) {
         ->condition('requestee_id', $account->uid)
       )
       ->execute();
-}
-
-/**
- * Wrapper function for tt() if i18nstrings enabled.
- */
-function ur_tt($name, $string, $langcode = NULL, $update = FALSE) {
-  if (module_exists('i18nstrings')) {
-    return tt($name, $string, $langcode, $update);
-  }
-  else {
-    return $string;
-  }
 }
 
 /**
@@ -383,28 +402,40 @@ function user_relationships_types_load($reset = FALSE) {
  *   A User Relationship type object
  */
 function user_relationships_type_save($rtype) {
+
+  // #348025 when editing a type, make sure that two-way relationships are not
+  // left as reciprocal, just in case, as the UI allows it.
+  if (empty($rtype->is_oneway)) {
+    $rtype->is_reciprocal = 0;
+  }
+
+  // Ensure "expires_val" is numeric and not negative.
+  if (!isset($rtype->expires_val) || !is_numeric($rtype->expires_val) || $rtype->expires_val < 0) {
+    $rtype->expires_val = 0;
+  }
+
   module_invoke_all('user_relationships_type_presave', $rtype);
 
   $op = (isset($rtype->rtid) && $rtype->rtid) ? 'update' : 'insert';
 
-  // find a relationship type with the name we're trying to save
+  // Find a relationship type with the name we're trying to save
   // if it's an update action check to see that the rtypes match
-  // otherwise it's just invalid
-  if (
-    ($found_rt = user_relationships_type_load(array('name' => $rtype->name))) &&
-    ($op == 'update' ? $found_rt->rtid != $rtype->rtid : TRUE)
-  ) {
+  // otherwise it's just invalid.
+  $found_rt = user_relationships_type_load(array('name' => $rtype->name));
+  if ($found_rt && (($op == 'update' && $found_rt->rtid != $rtype->rtid) || $op == 'insert')) {
     return FALSE;
-  }
-
-  // ensure "expires_val" is numeric and not negative
-  if (!is_numeric($rtype->expires_val) || $rtype->expires_val < 0) {
-    $rtype->expires_val = 0;
   }
 
   drupal_write_record('user_relationship_types', $rtype, ($op == 'update' ? 'rtid' : array()));
 
   module_invoke_all('user_relationships_type_' . $op, $rtype);
+
+  user_relationships_types_load(TRUE);
+
+  // Update strings for translation.
+  _user_relationships_update_translations($rtype);
+
+  menu_rebuild();
 }
 
 
@@ -466,14 +497,14 @@ function user_relationships_request_relationship($requester, $requestee = NULL, 
 
   //check requester is allowed to create this rtype
   if (!user_relationships_can_request($requester, $type)) {
-    watchdog('user_relationships', 'User %user has no suitable roles to request a %rtype relationship', array('%user' => format_username($requester), '%rtype' => $type->name), WATCHDOG_WARNING);
+    watchdog('user_relationships', 'User %user has no suitable roles to request a %rtype relationship', array('%user' => format_username($requester), '%rtype' => user_relationships_type_get_name($type)), WATCHDOG_WARNING);
     //it would be good to return a reason why save is denied, but it's the API portion, it does not expose anything user-visible
     return FALSE;
   }
 
   //check requestee is allowed to receive this rtype
   if (!user_relationships_can_receive($requestee, $type)) {
-    watchdog('user_relationships', 'User %user has no suitable roles to receive a %rtype relationship', array('%user' => format_username($requestee), '%rtype' => $type->name), WATCHDOG_WARNING);
+    watchdog('user_relationships', 'User %user has no suitable roles to receive a %rtype relationship', array('%user' => format_username($requestee), '%rtype' => user_relationships_type_get_name($type)), WATCHDOG_WARNING);
     //it would be good to return a reason why save is denied, but it's the API portion, it does not expose anything user-visible
     return FALSE;
   }
@@ -837,19 +868,10 @@ function user_relationships_get_message($key, $relationship = NULL, $replacement
     if (!isset($relationship->requestee)) {
       $relationship->requestee = user_load($relationship->requestee_id);
     }
-    if (!(isset($relationship->name) || isset($relationship->type))) {
-      $relationship->type = user_relationships_type_load($relationship->rtid);
-    }
 
-    $replaceables = array(
+    $replaceables = user_relationships_type_translations(user_relationships_type_load($relationship->rtid)) + array(
       '!requester'                => theme('username', array('account' => $relationship->requester)),
       '!requestee'                => theme('username', array('account' => $relationship->requestee)),
-      '%relationship_name'        => isset($relationship->name)
-                                     ? ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name)
-                                     : ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->type->name),
-      '%relationship_plural_name' => isset($relationship->plural_name)
-                                     ? ur_tt("user_relationships:rtid:$relationship->rtid:plural_name", $relationship->plural_name)
-                                     : ur_tt("user_relationships:rtid:$relationship->rtid:plural_name", $relationship->type->plural_name),
     );
     $replacements = array_merge($replaceables, $replacements);
   }
@@ -873,27 +895,27 @@ function user_relationships_get_message($key, $relationship = NULL, $replacement
 function _user_relationships_default_messages($replacements) {
   return array(
     'informational' => array(
-      'submitted'     => t('Your %relationship_name request has been sent to !requestee.', $replacements),
-      'accepted'      => t("!requester's %relationship_name request has been approved.", $replacements),
-      'disapproved'   => t("!requester has declined your %relationship_name request.", $replacements),
-      'disapprove'   => t("!requester's %relationship_name request has been declined.", $replacements),
-      'cancel'        => t('Your %relationship_name request to !requestee has been canceled.', $replacements),
+      'submitted'     => t('Your @rel_name request has been sent to !requestee.', $replacements),
+      'accepted'      => t("!requester's @rel_name request has been approved.", $replacements),
+      'disapproved'   => t("!requester has declined your @rel_name request.", $replacements),
+      'disapprove'   => t("!requester's @rel_name request has been declined.", $replacements),
+      'cancel'        => t('Your @rel_name request to !requestee has been canceled.', $replacements),
       'default'       => t('No action has been taken.'),
-      'removed'       => t('The %relationship_name relationship between !requester and !requestee has been deleted.', $replacements),
-      'pending'       => t('!requester has requested to be your %relationship_name. View your !pending_relationship_requests to approve or decline.', $replacements),
-      'pre_approved'  => t("You are !requestee's newest %relationship_name.", $replacements),
+      'removed'       => t('The @rel_name relationship between !requester and !requestee has been deleted.', $replacements),
+      'pending'       => t('!requester has requested to be your @rel_name. View your !pending_relationship_requests to approve or decline.', $replacements),
+      'pre_approved'  => t("You are !requestee's newest @rel_name.", $replacements),
     ),
     'error' => array(
       'too_many_relationships'  => t('You are not permitted to create any more relationships with this user.'),
-      'existing_request'        => t('There is already an earlier %relationship_name request sent to !requestee.', $replacements),
-      'existing_relationship'   => t('There is already an existing %relationship_name relationship with !requestee.', $replacements),
+      'existing_request'        => t('There is already an earlier @rel_name request sent to !requestee.', $replacements),
+      'existing_relationship'   => t('There is already an existing @rel_name relationship with !requestee.', $replacements),
       'not_accepting_requests'  => t('This user does not accept relationship requests.'),
       'self_request'            => t('You cannot create a relationship with yourself.'),
       'non_existent_user'       => t('This user does not exist.'),
       'non_existent_type'       => t('This relationship type does not exist.'),
       'unknown_error'           => t('An error has occurred. Please contact the site administrator.'),
       'relationship_type_not_set' => t('Please choose the type of relationship.'),
-      'relationship_type_not_allowed' => t('You may not create %relationship_name relationships.', $replacements),
+      'relationship_type_not_allowed' => t('You may not create @rel_name relationships.', $replacements),
     ),
   );
 }
@@ -944,13 +966,73 @@ function _user_relationships_get_from_array($needle, &$haystack) {
 }
 
 /**
- * Implements hook_locale().
+ * Implements hook_i18n_string_info().
  */
-function user_relationships_ui_locale($op = 'groups') {
-  switch ($op) {
-    case 'groups':
-      return array('user_relationships' => t('User Relationships'));
+function user_relationships_i18n_string_info() {
+  return array(
+    'user_relationships' => array(
+      'title' => t('User Relationships'),
+      'description' => t('Translations for relationship type names'),
+      'format' => FALSE,
+      'list' => TRUE,
+    ),
+  );
+}
+
+function user_relationships_i18n_string_list($group) {
+  if ($group == 'all' || $group == 'user_relationships') {
+    $strings = array();
+    foreach (user_relationships_types_load() as $type) {
+      $strings['user_relationships']['rtid'][$type->rtid]['name'] = $type->name;
+      $strings['user_relationships']['rtid'][$type->rtid]['plural_name'] = $type->plural_name;
+      $strings['user_relationships']['rtid'][$type->rtid]['name_capitalized'] = $type->name_capitalized;
+      $strings['user_relationships']['rtid'][$type->rtid]['plural_name_capitalized'] = $type->plural_name_capitalized;
+      $strings['user_relationships']['rtid'][$type->rtid]['reverse_name'] = $type->reverse_name;
+      $strings['user_relationships']['rtid'][$type->rtid]['reverse_plural_name'] = $type->reverse_plural_name;
+      $strings['user_relationships']['rtid'][$type->rtid]['reverse_name_capitalized'] = $type->reverse_name_capitalized;
+      $strings['user_relationships']['rtid'][$type->rtid]['reverse_plural_name_capitalized'] = $type->reverse_plural_name_capitalized;
+    }
+    return $strings;
   }
+}
+
+/**
+ * Gets the relationship type name.
+ */
+function user_relationships_type_get_name($type, $plural = FALSE, $reversed = FALSE, $capitalized = FALSE) {
+  if (is_string($type)) {
+    $type = user_relationships_type_load($type);
+  }
+
+  // Start with just name as the name and then add suffixes and prefixes
+  // according to the given flags.
+  $name  = 'name';
+  if ($plural) {
+    $name = 'plural_' . $name;
+  }
+
+  if ($reversed) {
+    $name = 'reverse_' . $name;
+  }
+
+  if ($capitalized) {
+    $name .= '_capitalized';
+  }
+
+  $name_value = !empty($type->$name) ? $type->$name : $type->name;
+  if (function_exists('i18n_string_translate')) {
+    $name_value = i18n_string_translate(array('user_relationships', 'rtid', $type->rtid, $name), $name_value);
+  }
+  return $name_value;
+}
+
+function user_relationships_type_translations($relationship_type) {
+  return array(
+    '@rel_name' => user_relationships_type_get_name($relationship_type),
+    '@rel_name_plural' => user_relationships_type_get_name($relationship_type, TRUE),
+    '@Rel_name' => user_relationships_type_get_name($relationship_type, FALSE, FALSE, TRUE),
+    '@Rel_name_plural' => user_relationships_type_get_name($relationship_type, TRUE, FALSE, TRUE),
+  );
 }
 
 /**
@@ -961,7 +1043,7 @@ function user_relationships_autocomplete_types($string = '') {
   if ($string) {
     $result = db_query_range("SELECT rtid, name FROM {user_relationship_types} WHERE LOWER(name) LIKE LOWER(:string)", 0, 10, array(':string' => '%' . strtolower($string) . '%'));
     foreach ($result as $relationship) {
-      $matches[$relationship->name] = check_plain(ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name));
+      $matches[$relationship->name] = check_plain(user_relationships_type_get_name($relationship));
    }
   }
   print drupal_json_output($matches);
@@ -1014,7 +1096,7 @@ function user_relationships_get_requestable_rtypes($requester, $requestee, $retu
       }
     }
     if ($return == 'name') {
-      $relationships[$rtype->rtid] = ur_tt("user_relationships:rtid:$rtype->rtid:name", $rtype->name);
+      $relationships[$rtype->rtid] = user_relationships_type_get_name($rtype);
     }
     else {
       $relationships[$rtype->rtid] = $rtype;
@@ -1022,3 +1104,21 @@ function user_relationships_get_requestable_rtypes($requester, $requestee, $retu
   }
   return $relationships;
 }
+
+/**
+ * Make relationship type available to translation by i18n_string.module
+ */
+function _user_relationships_update_translations($relationship_type) {
+  if (function_exists('i18n_string_update') && $relationship_type->rtid) {
+    $rtid = $relationship_type->rtid;
+    i18n_string_update("user_relationships:rtid:$rtid:name", $relationship_type->name);
+    i18n_string_update("user_relationships:rtid:$rtid:plural_name", $relationship_type->plural_name);
+    i18n_string_update("user_relationships:rtid:$rtid:name_capitalized", $relationship_type->name_capitalized);
+    i18n_string_update("user_relationships:rtid:$rtid:plural_name_capitalized", $relationship_type->plural_name_capitalized);
+    i18n_string_update("user_relationships:rtid:$rtid:reverse_name", $relationship_type->reverse_name);
+    i18n_string_update("user_relationships:rtid:$rtid:reverse_plural_name", $relationship_type->reverse_plural_name);
+    i18n_string_update("user_relationships:rtid:$rtid:reverse_name_capitalized", $relationship_type->reverse_name_capitalized);
+    i18n_string_update("user_relationships:rtid:$rtid:reverse_plural_name_capitalized", $relationship_type->reverse_plural_name_capitalized);
+  }
+}
+

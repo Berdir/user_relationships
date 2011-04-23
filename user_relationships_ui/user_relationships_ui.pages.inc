@@ -41,12 +41,12 @@ function user_relationships_page($account = NULL, $rtid = NULL) {
 
   if ($account->uid == $user->uid) {
     $msg = isset($relationship_type)
-           ? t("My %relationships", array('%relationships' => $relationship_type->plural_name ? ur_tt("user_relationships:rtid:" . $relationship_type->rtid . ":plural_name", $relationship_type->plural_name) : ur_tt("user_relationships:rtid:" . $relationship_type->rtid . ":name", $relationship_type->name)))
+           ? t("My @rel_name_plural", user_relationships_type_translations($relationship_type))
            : t("My relationships");
   }
   else {
     $msg = isset($relationship_type)
-           ? t("%username's %relationships", array('%username' => format_username($account), '%relationships' => $relationship_type->plural_name ? ur_tt("user_relationships:rtid:" . $relationship_type->rtid . ":plural_name", $relationship_type->plural_name) : ur_tt("user_relationships:rtid:" . $relationship_type->rtid . ":name", $relationship_type->name)))
+           ? t("%username's @rel_name", array('%username' => format_username($account)) + user_relationships_type_translations($relationship_type))
            : t("%username's relationships", array('%username' => format_username($account)));
   }
   drupal_set_title($msg, PASS_THROUGH);
@@ -60,7 +60,7 @@ function user_relationships_page($account = NULL, $rtid = NULL) {
   $header = user_relationships_ui_get_table_header($edit_access);
 
   if (!empty($rtid)) {
-    $empty = t('You do not have any %plural_name.', array('%plural_name' => ur_tt("user_relationships:rtid:$relationship_type->rtid:plural_name", $relationship_type->plural_name)));
+    $empty = t('You do not have any %rel_plural_name.', user_relationships_type_translations($relationship_type));
   }
   else {
     $empty = t('You do not have any relationships with other users.');
@@ -169,7 +169,7 @@ function user_relationships_ui_get_table_row($relationship, $account) {
 
   $row = array(
     theme('username', array('account' => $this_user)),
-    ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name) . ($relationship->is_oneway ? ($this_user_str == 'requestee' ? t(' (You to Them)') : t(' (Them to You)')) : NULL),
+    user_relationships_type_get_name($relationship, FALSE, $relationship->is_oneway && $this_user_str == 'requester'),
   );
   if ($edit_access) {
     $links = array();
