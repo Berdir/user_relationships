@@ -1,7 +1,7 @@
 
 User Relationship Blocks
 ------------------------
-Provides a few basic blocks for use with User Relationships. Block explanaitions are below.
+Provides a few basic blocks for use with User Relationships. Block explanations are below.
 
 
 Send comments to Jeff Smick: http://drupal.org/user/107579/contact, or post an issue at
@@ -48,7 +48,7 @@ User Relationships: {Relationship Type}
 
 * A note about the user being viewed:
   This user is found using _user_relationship_blocks_get_uid(). This can be
-  overriden by implementhing hook_user_relationship_blocks_get_uid().
+  overridden by implementing hook_user_relationship_blocks_get_uid().
 
 
 Theme Developers

@@ -38,7 +38,7 @@ User Relationships:
   use to control relationships
 
 User Relationships UI:
-  A basic user interface. UR-UI provides admins the ability to create realtionship types and
+  A basic user interface. UR-UI provides admins the ability to create relationships types and
   users to request/cancel/approve/disapprove/remove relationships with each other.
 
 User Relationship Blocks:
@@ -57,8 +57,8 @@ User Relationships Mailer:
 Developers
 ------------
 There are a number of API functions and corresponding hooks. The hooks are documented in user_relationships.api.php.
-The API functions are all defined in user_relationships.module. I've provded a list below for quick lookup, but you'll
-need to see the documentation in that file for a deeper explanaition.
+The API functions are all defined in user_relationships.module. I've provided a list below for quick lookup, but you'll
+need to see the documentation in that file for a deeper explanation.
 
   Functions
   =========

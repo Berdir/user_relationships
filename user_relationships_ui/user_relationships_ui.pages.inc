@@ -25,7 +25,7 @@ function user_relationships_page($account = NULL, $rtid = NULL) {
     $args['rtid'] = $rtid;
   }
   else {
-    // Get hidden relaionships.
+    // Get hidden relationships.
     $hidden = db_query('SELECT rtid FROM {user_relationships_ui_settings} WHERE hide = 1')->fetchCol();
     if (!empty($hidden)) {
       $args['exclude_rtids'] = $hidden;
@@ -78,11 +78,6 @@ function user_relationships_page($account = NULL, $rtid = NULL) {
     'pager' => array(
       '#markup' => theme('pager'),
     )
-  );
-
-  $context = array(
-    'account' => $account,
-    'relationship_type' => $relationship_type,
   );
 
   return $output;

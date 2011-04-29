@@ -89,7 +89,6 @@ function theme_user_relationship_block_subject($variables) {
   }
   else {
     global $user;
-    $user_name = ($account->uid == $user->uid) ? 'My' : t("@username's", array('@username' => format_username($account)));
     if ($rtid == UR_BLOCK_ALL_TYPES) {
       $output = ($account->uid == $user->uid) ? t('My relationships') : t("@username's relationships", array('@username' => format_username($account)));
     }
@@ -356,7 +355,6 @@ function _user_relationship_blocks_insert_defaults() {
  * Template pre processor for the main block view
  */
 function template_preprocess_user_relationships_block(&$variables) {
-  $user     =& $variables['user'];
   $account  =& $variables['account'];
   $settings =& $variables['settings'];
   $extra    =& $variables['extra'];

@@ -63,7 +63,7 @@
     // Adding ajax to the href because we need to determine between ajax and regular
     if (href.indexOf('?') == -1) {
       href += '?';
-    };
+    }
     href += '&ajax=1';
     // Making the ajax request to the server to retrieve the form.
     $.get(href, function(result) {
@@ -90,14 +90,14 @@
     html += '<img src="' + Drupal.settings.user_relationships_ui['loadingimage'] + '" border="0" height="20" width="200" />';
     html += '</div>';
     return html;
-  }
+  };
 
   /**
    * Helper function to hide the popup form
    */
   Drupal.user_relationships_ui.hidePopup = function() {
     $('#user_relationships_popup_form').slideUp();
-  }
+  };
 
   /**
    * Prevent users from clicking a submit button twice - borrowed from http://drupal.org/project/newswire - thanks, fellows :)

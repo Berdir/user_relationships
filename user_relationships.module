@@ -471,7 +471,7 @@ function user_relationships_request_relationship($requester, $requestee = NULL, 
     return FALSE;
   }
 
-  // check whether this relationship aleady exists
+  // check whether this relationship already exists
   if (!$type->is_oneway || !$type->is_reciprocal) {
     $existing = user_relationships_load(array('between' => array($requester->uid, $requestee->uid), 'rtid' => $type->rtid), array('count' => TRUE));
   }
@@ -627,12 +627,12 @@ function user_relationships_delete_relationship($relationship, $deleted_by, $act
   *     are two records. This flag has no effect if sort is 'rid'
   *
   * @param $reset
-  *   a boolean that will reset the internal static $relationships variable to ensure programatic relationship insertion works
+  *   a boolean that will reset the internal static $relationships variable to ensure programmatic relationship insertion works
   *
   * @return
   *   an array of relationships
-  *   if the key is "rid" the array will be a single dimention: array($rid => $relationship, $rid => $relationship)
-  *   otherwise it'll be multidimentional: array($rtid => array($relationship, $relationship))
+  *   if the key is "rid" the array will be a single dimension: array($rid => $relationship, $rid => $relationship)
+  *   otherwise it'll be multidimensional: array($rtid => array($relationship, $relationship))
   *
   *   each relationship will have the user's name, mail, and data attached as requester_name, requester_mail, requester_data
   *   or requestee_name, requestee_mail, requestee_data
@@ -646,7 +646,6 @@ function user_relationships_load($param = array(), $options = array(), $reset = 
   $options = array_merge($default_options, $options);
   extract($options, EXTR_SKIP);
 
-  $arguments = array();
   if (is_numeric($param)) {
     if (!$reset && isset($relationships[$param])) {
       return is_object($relationships[$param]) ? clone $relationships[$param] : $relationships[$param];

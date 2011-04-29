@@ -211,7 +211,7 @@ function user_relationship_node_access_node_insert($node) {
   user_relationsihp_node_access_update_node($node);
 }
 
-function user_relationsihp_node_access_update_node($node) {
+function user_relationship_node_access_update_node($node) {
   global $user;
   // If user is not allowed to effect perms, do not change access settings
   $allowed_grants = _user_relationship_node_access_get_allowed_grants($user);
@@ -255,7 +255,6 @@ function user_relationsihp_node_access_update_node($node) {
  * Implements hook_node_load()
  */
 function user_relationship_node_access_node_load($nodes, $types) {
-  global $user;
   foreach ($nodes as $node) {
     $node->user_relationship_node_access = _user_relationship_node_access_load_node_perms($node->nid);
   }
@@ -265,7 +264,6 @@ function user_relationship_node_access_node_load($nodes, $types) {
  * Implements hook_node_delete()
  */
 function user_relationship_node_access_node_delete($node) {
-  global $user;
   db_delete('user_relationship_node_access')
     ->condition('nid', $node->nid)
     ->execute();

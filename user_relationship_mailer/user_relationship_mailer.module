@@ -119,7 +119,7 @@ function user_relationship_mailer_user_relationships_delete($relationship, $acti
  * Implements hook_form_FORM_ID_alter().
  */
 function user_relationship_mailer_form_user_relationships_admin_settings_alter(&$form, &$form_state) {
-    global $user, $_user_relationship_mailer_ops;
+    global $_user_relationship_mailer_ops;
 
     $form['mail'] = array(
       '#type'   => 'fieldset',
@@ -140,7 +140,7 @@ function user_relationship_mailer_form_user_relationships_admin_settings_alter(&
 
     //compose a list of possible replacement keys for email templates
     $replacement_keys = array_keys(user_relationship_mailer_replacements());
-    //these two are added per-receipient in user_relationship_mailer_send_email()
+    //these two are added per-recipient in user_relationship_mailer_send_email()
     $replacement_keys[] = '@profile_uid';
     $replacement_keys[] = '@target_name';
     $macro_replacements = array('%macros' => implode(', ', $replacement_keys));

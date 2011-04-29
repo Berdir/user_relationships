@@ -2,7 +2,7 @@
 
 /**
  * @file
- * User Relationships API testcase
+ * User Relationships API tests
  * @author Alex Karshakevich http://drupal.org/user/183217
  */
 class UserRelationshipsTestCase extends DrupalWebTestCase {

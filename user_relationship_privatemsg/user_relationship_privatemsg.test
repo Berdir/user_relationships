@@ -31,7 +31,7 @@ class UserRelationshipsPrivatemsgRecipientTestCase extends DrupalWebTestCase {
   /**
    * Tests sending a message to related users.
    */
-  function testSendtoRelationship() {
+  function testSendToRelationship() {
 
     // Create relationship.
     $relationship = array(
@@ -79,7 +79,7 @@ class UserRelationshipsPrivatemsgRecipientTestCase extends DrupalWebTestCase {
     $this->drupalPost(NULL, $message, t('Send message'));
     $this->assertText(t('A message has been sent to your @relationship.', array('@relationship' => $relationship['plural_name'])));
 
-    // Check if userA recieved the message and is able to respond.
+    // Check if userA received the message and is able to respond.
     $this->drupalLogin($userA);
     $this->drupalGet('messages');
     $this->clickLink($message['subject']);

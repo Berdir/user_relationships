@@ -79,8 +79,6 @@ function user_relationships_panels_visibility_ctools_access_summary($conf, $cont
   if (!isset($conf['ur_relationship'])) {
     return t('Error, unset permission');
   }
-  $account1 = $context[0]->data;
-  $account2 = $context[1]->data;
 
   $relationship_types = user_relationships_types_load();
 

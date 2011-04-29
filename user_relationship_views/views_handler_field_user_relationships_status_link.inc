@@ -3,7 +3,7 @@
 /**
  * @file
  * User Relationships Views integration.
- * Show colum with link to change approval status.
+ * Show column with link to change approval status.
  */
 class views_handler_field_user_relationships_status_link extends views_handler_field {
   function construct() {
@@ -23,7 +23,7 @@ class views_handler_field_user_relationships_status_link extends views_handler_f
 
     global $user;
 
-    //Do not show to guests or users witout permission to have relationships.
+    //Do not show to guests or users without permission to have relationships.
     if (!$user->uid) {
       return;
     }

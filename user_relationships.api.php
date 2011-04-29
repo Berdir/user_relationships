@@ -11,7 +11,7 @@
  * @param $relationship_types_list
  *   A list of relationship types, keyed by rtid.
  *
- * @see user_relationhips_type_load_multiple()
+ * @see user_relationships_type_load_multiple()
  */
 function hook_user_relationships_type_load($relationship_types_list) {
 

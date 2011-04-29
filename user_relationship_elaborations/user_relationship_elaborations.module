@@ -148,7 +148,7 @@ function user_relationship_elaborations_form_alter(&$form, $form_state, $form_id
       break;
 
     case 'user_relationships_ui_request':
-      // Incase the form is an error form which the UI module has encountered
+      // In case the form is an error form which the UI module has encountered
       if (!isset($form['error'])) {
         // Make sure that the select box holding the relationship types is above the elaboration textarea.
         $form['rtid']['#weight'] = -10;

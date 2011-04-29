@@ -43,7 +43,7 @@ function user_relationships_preprocess_author_pane(&$variables) {
     if (count($relationships)) {
       // Existing relationship; need remove icon/link. (Despite the foreach,
       // there should only be one.)
-      foreach ($relationships as $rtid => $relationship) {
+      foreach ($relationships as $relationship) {
         $link_label = t('Remove @name from @rel_plural_name', array('@name' => format_username($account), '@rel_plural_name' => $relationship->plural_name));
         $css_class = array(str_replace(' ', '-', $relationship->name), 'author-pane-link', 'user_relationships_popup_link', 'author-relationship-remove-icon');
         //link to remove
@@ -67,8 +67,6 @@ function user_relationships_preprocess_author_pane(&$variables) {
       if (!user_relationships_can_request($user, $rtype) || !user_relationships_can_receive($account, $rtype)) {
         continue;
       }
-      $relationships_count = user_relationships_load(array('between' => array($user->uid, $account->uid)), array('count' => TRUE));
-      $link_label = t('Add @rel_name', array('@rel_name' => ur_tt("user_relationships:rtid:$rtype->rtid:name", $rtype->name)));
       $css_class = array(str_replace(' ', '-', $relationship->name), 'author-pane-link', 'user_relationships_popup_link', 'author-relationship-remove-icon');
       //add link
       if (!isset($variables['user_relationships'])) {

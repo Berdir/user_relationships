@@ -54,7 +54,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
   }
 
   //check if this request contradicts existing relationships or requests of this type
-  //gather rtid's of relationships that have already been requested from requester to requestee
+  //gather rtids of relationships that have already been requested from requester to requestee
   $test_relationships = array();
   foreach ($current_relationships as $key => $value) {
     foreach ($value as $val_rel) {
@@ -84,7 +84,7 @@ function user_relationships_ui_request_validate($form, &$form_state) {
     drupal_set_message(user_relationships_get_message('too_many_relationships'), 'error');
     drupal_goto();
   }
-  //check if desided relationship type is among the unused ones
+  //check if desired relationship type is among the unused ones
   elseif (isset($test_relationships[$rtid])) {
     $message_name = $test_relationships[$rtid]->approved ? 'existing_relationship' : 'existing_request';
     form_set_error('rtid', user_relationships_get_message($message_name, NULL, array(
@@ -111,11 +111,6 @@ function user_relationships_ui_request_submit($form, &$form_state) {
   if ($relationship === FALSE) {
     drupal_set_message(user_relationships_get_message('unknown_error', $relationship));
   }
-
-  //Not sure why these were here, they just cause php notices
-//  $relationship->requester = $requester;
-//  $relationship->requestee = $requestee;
-//  $relationship->type = $relationship_type;
 
   drupal_set_message(user_relationships_get_message(($relationship->approved ? 'pre_approved' : 'submitted'), $relationship));
 }

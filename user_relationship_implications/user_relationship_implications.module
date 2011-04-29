@@ -185,7 +185,7 @@ function user_relationship_implications_user_relationships_delete($relationship,
 
     // the relationship being deleted (current_type) is implied by this relationship (only matters if "strict" is set)
     if (isset($current_type->implied_by[$rtid]) && $current_type->implied_by[$rtid]->strict || isset($reversed[$rtid]) && $reversed[$rtid]->strict) {
-      user_relationships_delete_relationship($relationship, $current_type->deleted_by, $reason);
+      user_relationships_delete_relationship($relationship, $current_type->deleted_by, $action);
       drupal_set_message(user_relationships_get_message('removed', $relationship));
     }
   }
@@ -215,7 +215,7 @@ function user_relationship_implications_user_relationships_save($relationship, $
       ));
 
       // If there aren't any, create one with the same approved status as the
-      // relationship we're inserting/updateing.
+      // relationship we're inserting/updating.
       if (count($relationships) == 0) {
         // Dimensions are [rtid][requester uid][requestee uid].
         global $_user_relationship_implications_created_implications;
@@ -268,7 +268,7 @@ function theme_user_relationship_implications_page($variables) {
   global $user;
 
   $uid = $variables['uid'];
-  $relation = $variables['relation'];
+  $relationship = $variables['relation'];
 
   if (empty($uid)) {
     $viewed_user = $user;
@@ -297,10 +297,10 @@ function theme_user_relationship_implications_page($variables) {
   $edit_access = ($user->uid == $uid && user_access('maintain own relationships')) || user_access('administer users');
   $online_interval = time() - variable_get('user_block_seconds_online', 180);
 
+  $rows = array();
   foreach ($query->execute() as $relation) {
     $this_user = $viewed_user->uid == $relation->requestee_id ? 'requester_id' : 'requestee_id';
     $this_user = user_load($relation->$this_user);
-    $relations = array();
 
     $this_users_relationships = user_relationships_load(array('user' => $this_user->uid));
     $rows[] = array(
@@ -310,6 +310,8 @@ function theme_user_relationship_implications_page($variables) {
       $edit_access ? theme('user_relationships_remove_link', array('uid' => $viewed_user->uid, 'rid' => $relation->rid)) : '&nbsp;',
     );
   }
+
+  $output = '';
   if (count($rows)) {
     $output .= theme('table', array('rows' => $rows, 'attributes' => array('class' => array('user-relationship-implications-listing-table'))));
   }
