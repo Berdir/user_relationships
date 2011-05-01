@@ -732,6 +732,12 @@ function user_relationships_translate_user_info(&$relationship) {
  *   TRUE if requester is allowed to request this type of relationship.
  */
 function user_relationships_can_request($requester, $relationship_type = NULL) {
+
+  // Allow to by-pass the permission check.
+  if (!empty($requester->user_relationships_allow_all)) {
+    return TRUE;
+  }
+
   return user_relationships_user_access('can request @relationship relationships', $relationship_type, $requester);
 }
 
@@ -747,6 +753,12 @@ function user_relationships_can_request($requester, $relationship_type = NULL) {
  *   TRUE if receiver is allowed to request this type of relationship
  */
 function user_relationships_can_receive($requestee, $relationship_type = NULL) {
+
+  // Allow to by-pass the permission check.
+  if (!empty($requestee->user_relationships_allow_all)) {
+    return TRUE;
+  }
+
   return user_relationships_user_access('can have @relationship relationships', $relationship_type, $requestee);
 }
 
