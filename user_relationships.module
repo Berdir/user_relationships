@@ -61,6 +61,15 @@ function user_relationships_menu() {
     'file' => 'user_relationships.admin.inc',
     'weight' => 20,
   );
+
+  $items['relationship_types/autocomplete'] = array(
+    'title' => 'User Relationships Autocomplete',
+    'type' => MENU_CALLBACK,
+    'page callback' => '_user_relationships_ui_autocomplete_types',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer user relationships'),
+    'file' => 'user_relationships.admin.inc',
+  );
   return $items;
 }
 
@@ -940,4 +949,60 @@ function user_relationships_ui_locale($op = 'groups') {
     case 'groups':
       return array('user_relationships' => t('User Relationships'));
   }
+}
+
+/**
+ * Get relationship types that a user can request from another user.
+ *
+ * @param $requester
+ *   Requesting user object.
+ * @param $requestee
+ *   The requestee user object.
+ * @param $return
+ *   What should be returned, either name for the translated relationship name
+ *   or full for the whole object. Defaults to name.
+ *
+ * @return
+ *   An array of relationship types a user can request from another, keyed by
+ *   the relationship type id and either the name or full object as value,
+ *   depending on the return argument.
+ */
+function user_relationships_ui_get_requestable_rtypes($requester, $requestee, $return = 'name') {
+  $current_relationships = user_relationships_load(array('between' => array($requester->uid, $requestee->uid)), array('sort' => 'rtid'));
+
+  $relationship_types = user_relationships_types_load();
+  $relationships = array();
+  foreach ($relationship_types as $rtype) {
+
+    // Exclude types that are not allowed.
+    if (!user_relationships_can_request($requester, $rtype) || !user_relationships_can_receive($requestee, $rtype)) {
+      continue;
+    }
+
+    // If there is a relationship o that type already, make further checks.
+    if (isset($current_relationships[$rtype->rtid])) {
+      $relationship = $current_relationships[$rtype->rtid];
+      if (is_array($relationship) && count($relationship)) {
+        $relationship = $relationship[0];
+      }
+
+      // Skip two-way relationships, one-way non-reciprocal relationships, or
+      // reciprocal where this direction already exists.
+      if (isset($current_relationships[$rtype->rtid]) && (!$rtype->is_oneway || !$rtype->is_reciprocal || (isset($relationship) && $relationship->requester_id == $requester->uid))) {
+        // If users can't have multiple relationships, we're done here.
+        // Return an empty array.
+        if (!variable_get('user_relationships_allow_multiple', TRUE)) {
+          return array();
+        }
+        continue;
+      }
+    }
+    if ($return == 'name') {
+      $relationships[$rtype->rtid] = ur_tt("user_relationships:rtid:$rtype->rtid:name", $rtype->name);
+    }
+    else {
+      $relationships[$rtype->rtid] = $rtype;
+    }
+  }
+  return $relationships;
 }

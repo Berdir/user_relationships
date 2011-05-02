@@ -481,3 +481,17 @@ function _user_relationships_message_settings_form(&$form, $defaults = array()) 
     }
   }
 }
+
+/**
+ * Adds autocompletion capability
+ */
+function _user_relationships_ui_autocomplete_types($string = '') {
+  $matches = array();
+  if ($string) {
+    $result = db_query_range("SELECT rtid, name FROM {user_relationship_types} WHERE LOWER(name) LIKE LOWER(:string)", 0, 10, array(':string' => '%' . strtolower($string) . '%'));
+    foreach ($result as $relationship) {
+      $matches[$relationship->name] = check_plain(ur_tt("user_relationships:rtid:$relationship->rtid:name", $relationship->name));
+   }
+  }
+  print drupal_json_output($matches);
+}
