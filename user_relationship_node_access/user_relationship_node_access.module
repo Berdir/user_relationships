@@ -201,14 +201,14 @@ function user_relationship_node_access_form_user_relationships_admin_settings_al
  * Implements hook_node_update()
  */
 function user_relationship_node_access_node_update($node) {
-  user_relationsihp_node_access_update_node($node);
+  user_relationship_node_access_update_node($node);
 }
 
 /**
  * Implements hook_node_insert()
  */
 function user_relationship_node_access_node_insert($node) {
-  user_relationsihp_node_access_update_node($node);
+  user_relationship_node_access_update_node($node);
 }
 
 function user_relationship_node_access_update_node($node) {
