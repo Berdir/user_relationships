@@ -503,9 +503,13 @@ function user_relationships_request_relationship($requester, $requestee = NULL, 
  *   able to save
  */
 function user_relationships_save_relationship($relationship, $action = 'request') {
-  //set basic info if it doesn't already exist
-  !isset($relationship->flags) ? $relationship->flags = UR_OK : NULL;
-  !isset($relationship->created_at) ? $relationship->created_at = REQUEST_TIME : NULL;
+  // Set basic info if it doesn't already exist.
+  if (!isset($relationship->flags)) {
+    $relationship->flags = UR_OK;
+  }
+  if (!isset($relationship->created_at)) {
+    $relationship->created_at = REQUEST_TIME;
+  }
   $relationship->updated_at = REQUEST_TIME;
 
   if ($action == 'approve') {
@@ -517,6 +521,7 @@ function user_relationships_save_relationship($relationship, $action = 'request'
   try {
     module_invoke_all('user_relationships_presave', $relationship);
 
+    $keys = array();
     if (isset($relationship->rid)) {
       // Delete possible requests coming the other direction
       $relationship_type = user_relationships_type_load($relationship->rtid);
@@ -527,24 +532,23 @@ function user_relationships_save_relationship($relationship, $action = 'request'
           ->condition('requestee_id', $relationship->requester_id)
           ->execute();
       }
+      $keys = array('rid');
     }
-
-    //#454680 make sure that an update is performed if this is an existing relationship
-    if (drupal_write_record('user_relationships', $relationship, (isset($relationship->rid) ? array('rid') : array()))) {
-      // if the relationship has been approved and is two-way we need
-      // to do a double entry for DB efficiency
+    else {
+      // For a new entry, get a new id.
+      $relationship->rid = db_next_id(db_query('SELECT MAX(rid) FROM {user_relationships}')->fetchField());
+    }
+    // #454680 make sure that an update is performed if this is an existing
+    // relationship.
+    if (drupal_write_record('user_relationships', $relationship, $keys)) {
+      // If the relationship has been approved and is two-way we need
+      // to do a double entry for DB efficiency.
       $relationship_type = user_relationships_type_load($relationship->rtid);
       if ($relationship->approved && !$relationship_type->is_oneway) {
-        //#365623 drupal_write_record will not work because rid is a serial field, and we need to use the same rid
-        // @todo: Verify that this doesn't cause problems when an existing
-        // relationship is updated again after being approved.
-        $select = db_select('user_relationships', 'ur')
-          ->fields('ur', array('rid', 'requester_id', 'requestee_id', 'rtid', 'approved', 'created_at', 'updated_at', 'flags'))
-          ->condition('rid', $relationship->rid);
-        db_insert('user_relationships')
-          ->fields(array('rid', 'requestee_id', 'requester_id', 'rtid', 'approved', 'created_at', 'updated_at', 'flags'))
-          ->from($select)
-          ->execute();
+        $reversed_relationship = clone $relationship;
+        $reversed_relationship->requestee_id = $relationship->requester_id;
+        $reversed_relationship->requester_id = $relationship->requestee_id;
+        drupal_write_record('user_relationships', $reversed_relationship, $keys);
       }
     }
 

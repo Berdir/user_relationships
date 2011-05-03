@@ -11,7 +11,7 @@
 function user_relationships_schema() {
   $schema['user_relationships'] = array(
     'fields' => array(
-      'rid'           => array('type' => 'serial', 'not null' => TRUE),
+      'rid'           => array('type' => 'int', 'not null' => TRUE),
       'requester_id'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'requestee_id'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'rtid'          => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
@@ -93,4 +93,11 @@ function user_relationships_update_7001() {
   drupal_set_message(('Allowed roles settings for user relationship types must now be set by configuring the corresponding permissions explicitly.'));
   db_drop_table('user_relationship_type_roles');
   db_drop_table('user_relationship_type_roles_receive');
+}
+
+/**
+ *  Change {user_relationships}.rid from type serial to int.
+ */
+function user_relationships_update_7002() {
+  db_change_field('user_relationships', 'rid', array('type' => 'int', 'not null' => TRUE));
 }
