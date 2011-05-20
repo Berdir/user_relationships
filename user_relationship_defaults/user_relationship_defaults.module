@@ -134,7 +134,7 @@ function user_relationship_defaults_add_form($form, &$form_state) {
     '#default_value'      => isset($form_state['relationship_type_name']) ? $form_state['relationship_type_name'] : NULL,
     '#description'        => t('Start typing the name of a relationship to use'),
     '#required'           => TRUE,
-    '#autocomplete_path'  => 'relationship_types/autocomplete',
+    '#autocomplete_path'  => 'admin/user_relationships/autocomplete/types',
   );
   $form['submit'] = array(
     '#type'   => 'submit',

@@ -406,8 +406,8 @@ function template_preprocess_user_relationships_actions_block(&$variables) {
   $account  =& $variables['account'];
 
   if ($user != $account) {
-    $variables['current_relationships'] = _user_relationships_ui_actions_between($user, $account, array('remove' => 1));
+    $variables['current_relationships'] = user_relationships_ui_actions_between($user, $account, array('remove' => 1));
   }
 
-  $variables['actions'] = _user_relationships_ui_actions_between($user, $account, array('add' => 1, 'requested' => 1, 'received' => 1));
+  $variables['actions'] = user_relationships_ui_actions_between($user, $account, array('add' => 1, 'requested' => 1, 'received' => 1));
 }
