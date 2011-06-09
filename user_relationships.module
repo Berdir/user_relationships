@@ -87,61 +87,61 @@ function _user_relationships_generate_query($param = array(), $options = array()
     }
 
     switch ($key) {
-    case 'between':
-      $or = db_or()->condition(db_and()
-          ->condition('ur.requester_id', $value[0])
-          ->condition('ur.requestee_id', $value[1])
-      );
-      $and = db_and()
-        ->condition('ur.requestee_id', $value[0])
-        ->condition('ur.requester_id', $value[1]);
-      //#479486 do not include reverse records of two-way relationships by default
-      if (!isset($include_twoway_reverse)) {
-        $and->condition(db_or()
-          ->condition('ur.approved', 1, '<>')
-          ->condition('urt.is_oneway', 0, '<>'));
-        $twoway_reverse_clause = TRUE;
-      }
-      $or->condition($and);
-      $query->condition($or);
-      break;
+      case 'between':
+        $or = db_or()->condition(db_and()
+            ->condition('ur.requester_id', $value[0])
+            ->condition('ur.requestee_id', $value[1])
+        );
+        $and = db_and()
+          ->condition('ur.requestee_id', $value[0])
+          ->condition('ur.requester_id', $value[1]);
+        //#479486 do not include reverse records of two-way relationships by default
+        if (!isset($include_twoway_reverse)) {
+          $and->condition(db_or()
+            ->condition('ur.approved', 1, '<>')
+            ->condition('urt.is_oneway', 0, '<>'));
+          $twoway_reverse_clause = TRUE;
+        }
+        $or->condition($and);
+        $query->condition($or);
+        break;
 
-    case 'user':
-      //#479486 when showing all user's relationships, do not include reverse records of two-way relationships
-      if (!isset($include_twoway_reverse)) {
-        $query->condition(db_or()
-          ->condition('ur.requester_id', $value)
-          ->condition(db_and()
-            ->condition(db_or()
-              ->condition('ur.approved', 1, '<>')
-              ->condition('urt.is_oneway', 0, '<>')
+      case 'user':
+        //#479486 when showing all user's relationships, do not include reverse records of two-way relationships
+        if (!isset($include_twoway_reverse)) {
+          $query->condition(db_or()
+            ->condition('ur.requester_id', $value)
+            ->condition(db_and()
+              ->condition(db_or()
+                ->condition('ur.approved', 1, '<>')
+                ->condition('urt.is_oneway', 0, '<>')
+              )
+              ->condition('ur.requestee_id', $value)
             )
+          );
+          $twoway_reverse_clause = TRUE;
+        }
+        else {
+          $query->condition(db_or()
+            ->condition('ur.requester_id', $value)
             ->condition('ur.requestee_id', $value)
-          )
-        );
-        $twoway_reverse_clause = TRUE;
-      }
-      else {
-        $query->condition(db_or()
-          ->condition('ur.requester_id', $value)
-          ->condition('ur.requestee_id', $value)
-        );
-      }
-      $arguments[] = $value;
-      break;
+          );
+        }
+        $arguments[] = $value;
+        break;
 
-    case 'exclude_rtids':
-      $query->condition('ur.rtid', $value, 'NOT IN');
-      break;
+      case 'exclude_rtids':
+        $query->condition('ur.rtid', $value, 'NOT IN');
+        break;
 
-    case 'requester_id':
-    case 'requestee_id':
-      $twoway_reverse_clause = TRUE;//#479486 these columns automatically should exclude duplicates
+      case 'requester_id':
+      case 'requestee_id':
+        $twoway_reverse_clause = TRUE;//#479486 these columns automatically should exclude duplicates
 
-    default:
-      $types_cols = array('name', 'plural_name', 'is_oneway', 'is_reciprocal', 'requires_approval', 'expires_val');
-      $prefix = !in_array($key, $types_cols) ? 'ur' : 'urt';
-      $query->condition($prefix . '.' . $key, $value);
+      default:
+        $types_cols = array('name', 'plural_name', 'is_oneway', 'is_reciprocal', 'requires_approval', 'expires_val');
+        $prefix = !in_array($key, $types_cols) ? 'ur' : 'urt';
+        $query->condition($prefix . '.' . $key, $value);
     }
   }
 
