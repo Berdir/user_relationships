@@ -99,5 +99,5 @@ function user_relationships_update_7001() {
  *  Change {user_relationships}.rid from type serial to int.
  */
 function user_relationships_update_7002() {
-  db_change_field('user_relationships', 'rid', array('type' => 'int', 'not null' => TRUE));
+  db_change_field('user_relationships', 'rid', 'rid', array('type' => 'int', 'not null' => TRUE));
 }
