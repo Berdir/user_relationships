@@ -31,7 +31,7 @@ function user_relationship_node_access_uninstall() {
  * Implements hook_enable().
  */
 function user_relationship_node_access_enable() {
-  node_access_rebuild();
+  node_access_needs_rebuild(TRUE);
 }
 
 /**
@@ -39,6 +39,6 @@ function user_relationship_node_access_enable() {
  */
 function _user_relationship_node_access_disable() {
   _user_relationship_node_access_disabling(TRUE);
-  node_access_rebuild();
+  node_access_needs_rebuild(TRUE);
 }
 
