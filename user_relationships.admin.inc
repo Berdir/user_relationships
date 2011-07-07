@@ -292,26 +292,6 @@ function user_relationships_admin_type_edit_validate($form, &$form_state) {
   }
 }
 
-/***
- * Generic settings validation.
- */
-function user_relationships_setting_validation($element, $validations) {
-  foreach ($validations as $validation => $info) {
-    $arguments = array($element['#value']);
-    if (isset($info['valid_options'])) {
-      $arguments[] = $info['valid_options'];
-    }
-
-    $valid = function_exists($validation) && call_user_func_array($validation, $arguments);
-    $valid = !$valid ? ($validation == 'is_positive' && is_numeric($arguments) && (int)$arguments > 0) : FALSE;
-    $valid = !$valid ? ($validation == 'is_non_negative' && is_numeric($arguments) && (int)$arguments > -1) : FALSE;
-
-    if (!$valid) {
-      form_set_error($element['#name'], $info['msg']);
-    }
-  }
-}
-
 /**
  * Process the relationship edit page form submission.
  */

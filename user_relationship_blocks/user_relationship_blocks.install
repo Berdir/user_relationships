@@ -21,17 +21,6 @@ function user_relationship_blocks_schema() {
 }
 
 /**
- * Install
- */
-function user_relationship_blocks_install() {
-
-  include_once(drupal_get_path('module', 'user_relationship_blocks') . '/user_relationship_blocks.module');
-  include_once(drupal_get_path('module', 'user_relationships') . '/user_relationships.module');
-
-  _user_relationship_blocks_insert_defaults();
-}
-
-/**
  * Implements hook_update_N().
  * Update 6000 creates db tables after upgrade from D5.
  */
