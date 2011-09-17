@@ -36,8 +36,8 @@ function user_relationship_mailer_send_email($op, $relationship) {
   $relationship->requester = $requester = user_load($relationship->requester_id);
   $relationship->requestee = $requestee = user_load($relationship->requestee_id);
 
-  $send_to_requestee = isset($requestee->user_relationship_mailer_send_mail) ? $requestee->user_relationship_mailer_send_mail : TRUE;
-  $send_to_requester = isset($requester->user_relationship_mailer_send_mail) ? $requester->user_relationship_mailer_send_mail : TRUE;
+  $send_to_requestee = isset($requestee->data['user_relationship_mailer_send_mail']) ? $requestee->data['user_relationship_mailer_send_mail'] : TRUE;
+  $send_to_requester = isset($requester->data['user_relationship_mailer_send_mail']) ? $requester->data['user_relationship_mailer_send_mail'] : TRUE;
 
   $send_to = array();
   switch ($op) {
@@ -190,11 +190,18 @@ function user_relationship_mailer_form_alter(&$form, &$form_state, $form_id) {
     $form['user_relationships_ui_settings']['user_relationship_mailer_send_mail'] = array(
       '#type'           => 'checkbox',
       '#title'          => t('Receive e-mail notification of relationship activity'),
-      '#default_value'  => isset($form['#user']->user_relationship_mailer_send_mail) ? $form['#user']->user_relationship_mailer_send_mail : TRUE,
+      '#default_value'  => isset($form['#user']->data['user_relationship_mailer_send_mail']) ? $form['#user']->data['user_relationship_mailer_send_mail'] : TRUE,
       '#description'    => t("If checked, we will e-mail you when there are changes to your relationship status with other users."),
       '#weight'         => -10,
       '#access' => $access,
     );
   }
+}
+
+/**
+ * Implements hook_user_presave().
+ */
+function user_relationship_mailer_user_presave(&$edit, $account, $category) {
+  $edit['data']['user_relationship_mailer_send_mail'] = isset($edit['user_relationship_mailer_send_mail']) ? $edit['user_relationship_mailer_send_mail'] : array();
 }
 
