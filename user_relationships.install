@@ -53,6 +53,7 @@ function user_relationships_schema() {
  * Implements hook_uninstall().
  */
 function user_relationships_uninstall() {
+  drupal_load('module', 'user_relationships');
   $message_defaults = _user_relationships_default_messages(array());
   $message_keys = array_merge(array_keys($message_defaults['informational']), array_keys($message_defaults['error']));
   foreach ($message_keys as $key) {
