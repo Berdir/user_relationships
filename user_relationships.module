@@ -254,15 +254,28 @@ function _user_relationships_generate_query($param = array(), $options = array()
  * Implements hook_permission().
  */
 function user_relationships_permission() {
-  $permissions = array();
+  $permissions = array(
+    'administer user relationships' => array(
+    'title' => t('Administer User Relationships'),
+    'description' => t('Allows to administer user relationships and view relationships of all users.'),
+  ));
+
   foreach (user_relationships_types_load() as $type) {
     $permissions['can have ' . $type->name . ' relationships'] = array(
-      'title' => t('Can have @name relationships', array('@name' => $type->name)),
-      'description' => t('The user is allowed to have and accept relationships of that type.'),
+      'title' => t('Have %name relationships', array('%name' => $type->name)),
+      'description' => t('The user may have relationships of this type.'),
+    );
+    $permissions['maintain ' . $type->name . ' relationships'] = array(
+      'title' => t('Maintain %name relationships', array('%name' => $type->name)),
+      'description' => t('The user may approve or decline relationship requests of this type.'),
     );
     $permissions['can request ' . $type->name . ' relationships'] = array(
-      'title' => t('Can request @name relationships', array('@name' => $type->name)),
-      'description' => t('The user is allowed to request relationships of that type.'),
+      'title' => t('Request %name relationships', array('%name' => $type->name)),
+      'description' => t('The user may request relationships of this type.'),
+    );
+    $permissions['delete ' . $type->name . ' relationships'] = array(
+      'title' => t('Delete %name relationships', array('%name' => $type->name)),
+      'description' => t('The user may delete current relationships of this type.'),
     );
   }
   return $permissions;
